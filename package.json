@@ -17,6 +17,7 @@
     "@prisma/client": "^7.2.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@supabase/supabase-js": "^2.89.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "makerjs": "^0.18.1",
