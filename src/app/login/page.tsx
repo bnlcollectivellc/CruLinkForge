@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,20 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Check if already logged in
+  useEffect(() => {
+    const userData = localStorage.getItem('forge_user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      // If admin, redirect to admin, otherwise to landing
+      if (user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -22,15 +36,28 @@ export default function LoginPage() {
     // Simulate auth - in production, use NextAuth.js or similar
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Demo: admin@browningswelding.com goes to admin, others to order history
-    if (email.includes('admin') || email.includes('browningswelding')) {
-      router.push('/admin');
-    } else if (email && password) {
-      // Regular user would go to their order history
-      router.push('/order/FOR-0045'); // Demo: redirect to sample order
-    } else {
+    if (!email || !password) {
       setError('Please enter your email and password');
       setIsLoading(false);
+      return;
+    }
+
+    // Demo: admin@browningswelding.com goes to admin, others stay on landing
+    const isAdmin = email.includes('admin') || email.includes('browningswelding');
+
+    // Store user session
+    const userData = {
+      email,
+      name: isAdmin ? 'John Browning' : email.split('@')[0],
+      role: isAdmin ? 'admin' : 'customer',
+    };
+    localStorage.setItem('forge_user', JSON.stringify(userData));
+
+    if (isAdmin) {
+      router.push('/admin');
+    } else {
+      // Regular customers go back to landing page (they can access /account from there)
+      router.push('/');
     }
   };
 
@@ -143,9 +170,12 @@ export default function LoginPage() {
           {/* Demo hint */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800">
-              <strong>Demo:</strong> Use any email with &quot;admin&quot; to access the admin portal,
-              or any other email to view customer order history.
+              <strong>Demo Accounts:</strong>
             </p>
+            <ul className="text-sm text-blue-700 mt-2 space-y-1">
+              <li><strong>Admin:</strong> admin@browningswelding.com / demo123!</li>
+              <li><strong>Customer:</strong> customer@example.com / demo123!</li>
+            </ul>
           </div>
         </div>
       </main>

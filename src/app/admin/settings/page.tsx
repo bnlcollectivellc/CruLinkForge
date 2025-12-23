@@ -20,11 +20,14 @@ import {
   Type,
   Eye,
   Layers,
+  Menu,
+  X,
 } from 'lucide-react';
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState('storefront');
   const [isSaving, setIsSaving] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Company settings
   const [companyName, setCompanyName] = useState("Browning's Welding & Fabrication");
@@ -62,17 +65,73 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: 'storefront', label: 'Storefront', icon: Store },
-    { id: 'company', label: 'Company Profile', icon: Building2 },
+    { id: 'company', label: 'Company', icon: Building2 },
     { id: 'pricing', label: 'Pricing', icon: DollarSign },
     { id: 'leadtimes', label: 'Lead Times', icon: Clock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'users', label: 'Users', icon: Users },
   ];
 
+  const navLinks = [
+    { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/admin/orders', icon: Package, label: 'Orders' },
+    { href: '/admin/settings', icon: Settings, label: 'Settings', active: true },
+  ];
+
   return (
-    <div className="min-h-screen bg-neutral-100 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col">
+    <div className="min-h-screen bg-neutral-100 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-white border-b border-neutral-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <Link href="/">
+          <Image src="/logo.png" alt="Logo" width={36} height={36} className="h-9 w-auto" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+          >
+            <Save className="w-4 h-4" />
+            {isSaving ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 hover:bg-neutral-100 rounded-lg"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Dropdown */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-b border-neutral-200 px-4 py-3">
+          <nav className="space-y-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
+                  link.active
+                    ? 'bg-[var(--color-primary)] text-white'
+                    : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <link.icon className="w-5 h-5" />
+                {link.label}
+              </Link>
+            ))}
+            <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full">
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-neutral-200 flex-col shrink-0">
         <div className="p-6 border-b border-neutral-200">
           <Link href="/">
             <Image src="/logo.png" alt="Logo" width={48} height={48} className="h-12 w-auto hover:opacity-80 transition-opacity" />
@@ -82,33 +141,21 @@ export default function AdminSettingsPage() {
 
         <nav className="flex-1 p-4">
           <ul className="space-y-1">
-            <li>
-              <Link
-                href="/admin"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100"
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/admin/orders"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100"
-              >
-                <Package className="w-5 h-5" />
-                Orders
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/admin/settings"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--color-primary)] text-white"
-              >
-                <Settings className="w-5 h-5" />
-                Settings
-              </Link>
-            </li>
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
+                    link.active
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-neutral-600 hover:bg-neutral-100'
+                  }`}
+                >
+                  <link.icon className="w-5 h-5" />
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -121,9 +168,9 @@ export default function AdminSettingsPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+      <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-neutral-900">Settings</h1>
             <p className="text-neutral-600">Manage your store settings</p>
@@ -138,9 +185,34 @@ export default function AdminSettingsPage() {
           </button>
         </div>
 
-        <div className="flex gap-8">
-          {/* Settings Nav */}
-          <div className="w-48 shrink-0">
+        {/* Mobile Title */}
+        <div className="lg:hidden mb-4">
+          <h1 className="text-xl font-bold text-neutral-900">Settings</h1>
+        </div>
+
+        {/* Settings Tabs - Horizontal scroll on mobile */}
+        <div className="mb-6 -mx-4 px-4 lg:mx-0 lg:px-0">
+          <div className="flex lg:hidden gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors shrink-0 ${
+                  activeTab === tab.id
+                    ? 'bg-[var(--color-primary)] text-white'
+                    : 'bg-white text-neutral-600 border border-neutral-200'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Desktop Settings Nav */}
+          <div className="hidden lg:block w-48 shrink-0">
             <nav className="space-y-1">
               {tabs.map((tab) => (
                 <button
@@ -160,10 +232,10 @@ export default function AdminSettingsPage() {
           </div>
 
           {/* Settings Content */}
-          <div className="flex-1 bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+          <div className="flex-1 bg-white rounded-xl shadow-sm border border-neutral-200 p-4 sm:p-6">
             {activeTab === 'storefront' && (
               <div>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
                     <h2 className="text-lg font-semibold text-neutral-900">Storefront</h2>
                     <p className="text-sm text-neutral-500">Customize your landing page appearance</p>
@@ -178,12 +250,12 @@ export default function AdminSettingsPage() {
                   </Link>
                 </div>
 
-                {/* Hero Section Editor - Mimics landing page layout */}
+                {/* Hero Section Editor */}
                 <div className="border border-neutral-200 rounded-xl overflow-hidden mb-6">
                   <div className="bg-neutral-50 px-4 py-2 border-b border-neutral-200">
                     <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Hero Section</span>
                   </div>
-                  <div className="p-4 md:p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Left side - Text fields stacked */}
                       <div className="flex-1 space-y-4">
@@ -197,19 +269,19 @@ export default function AdminSettingsPage() {
                               type="text"
                               value={heroHeading}
                               onChange={(e) => setHeroHeading(e.target.value)}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold"
+                              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold text-sm sm:text-base"
                               placeholder="Custom Metal Parts,"
                             />
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
-                              Heading Line 2 <span className="text-[var(--color-primary)]">(accent color)</span>
+                              Line 2 <span className="text-[var(--color-primary)]">(accent)</span>
                             </label>
                             <input
                               type="text"
                               value={heroAccent}
                               onChange={(e) => setHeroAccent(e.target.value)}
-                              className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold text-[var(--color-primary)]"
+                              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold text-[var(--color-primary)] text-sm sm:text-base"
                               placeholder="Instant Quotes"
                             />
                           </div>
@@ -222,11 +294,11 @@ export default function AdminSettingsPage() {
                             value={heroSubheading}
                             onChange={(e) => setHeroSubheading(e.target.value)}
                             rows={3}
-                            className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none text-sm sm:text-base"
                             placeholder="Supporting text..."
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
                           <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
                               Primary Button
@@ -235,7 +307,7 @@ export default function AdminSettingsPage() {
                               type="text"
                               value={ctaButtonText}
                               onChange={(e) => setCtaButtonText(e.target.value)}
-                              className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                               placeholder="Start with Template"
                             />
                           </div>
@@ -247,7 +319,7 @@ export default function AdminSettingsPage() {
                               type="text"
                               value={ctaSecondaryText}
                               onChange={(e) => setCtaSecondaryText(e.target.value)}
-                              className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                               placeholder="Upload CAD File"
                             />
                           </div>
@@ -255,10 +327,10 @@ export default function AdminSettingsPage() {
                       </div>
 
                       {/* Right side - Hero image upload */}
-                      <div className="w-full lg:w-56 shrink-0">
+                      <div className="w-full lg:w-48 shrink-0">
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
                           <ImageIcon className="w-4 h-4 inline mr-2" />
-                          Background (optional)
+                          Background
                         </label>
                         <div className="relative aspect-video lg:aspect-[4/3] bg-neutral-100 rounded-xl overflow-hidden border-2 border-dashed border-neutral-300 hover:border-[var(--color-primary)] transition-colors group">
                           {heroImageUrl ? (
@@ -270,11 +342,11 @@ export default function AdminSettingsPage() {
                             />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <ImageIcon className="w-12 h-12 text-neutral-300" />
+                              <ImageIcon className="w-10 h-10 text-neutral-300" />
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-neutral-700 flex items-center gap-2">
+                            <button className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-neutral-700 flex items-center gap-2">
                               <Upload className="w-4 h-4" />
                               Replace
                             </button>
@@ -285,35 +357,35 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                {/* Preview - Matches actual landing page layout */}
+                {/* Preview */}
                 <div className="border border-neutral-200 rounded-xl overflow-hidden">
                   <div className="bg-neutral-50 px-4 py-2 border-b border-neutral-200">
                     <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Preview</span>
                   </div>
                   <div className="relative bg-white overflow-hidden">
-                    <div className="flex flex-col md:flex-row items-center p-6 md:p-8 gap-6">
+                    <div className="flex flex-col sm:flex-row items-center p-4 sm:p-6 gap-4 sm:gap-6">
                       {/* Left - Content */}
-                      <div className="flex-1 text-left">
-                        <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 leading-tight">
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 leading-tight">
                           {heroHeading || 'Custom Metal Parts,'}
                           <br />
                           <span className="text-[var(--color-primary)]">{heroAccent || 'Instant Quotes'}</span>
                         </h3>
-                        <p className="text-sm text-neutral-600 mt-3 line-clamp-2">{heroSubheading || 'Your description text'}</p>
-                        <div className="flex gap-3 mt-4">
-                          <span className="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-medium rounded-lg inline-flex items-center gap-1">
+                        <p className="text-xs sm:text-sm text-neutral-600 mt-2 sm:mt-3 line-clamp-2">{heroSubheading || 'Your description text'}</p>
+                        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mt-3 sm:mt-4">
+                          <span className="px-3 py-1.5 bg-[var(--color-primary)] text-white text-xs font-medium rounded-lg inline-flex items-center gap-1">
                             {ctaButtonText || 'Primary CTA'} →
                           </span>
-                          <span className="px-4 py-2 bg-white text-neutral-700 text-xs font-medium rounded-lg border border-neutral-300 inline-flex items-center gap-1">
+                          <span className="px-3 py-1.5 bg-white text-neutral-700 text-xs font-medium rounded-lg border border-neutral-300 inline-flex items-center gap-1">
                             ↑ {ctaSecondaryText || 'Secondary CTA'}
                           </span>
                         </div>
                       </div>
                       {/* Right - 3D Preview placeholder */}
-                      <div className="w-full md:w-48 h-32 bg-neutral-100 rounded-xl flex items-center justify-center shrink-0">
+                      <div className="w-full sm:w-40 h-24 sm:h-28 bg-neutral-100 rounded-xl flex items-center justify-center shrink-0">
                         <div className="text-center text-neutral-400">
-                          <Layers className="w-8 h-8 mx-auto mb-1" />
-                          <span className="text-xs">3D Part Preview</span>
+                          <Layers className="w-6 h-6 mx-auto mb-1" />
+                          <span className="text-xs">3D Preview</span>
                         </div>
                       </div>
                     </div>
@@ -329,18 +401,19 @@ export default function AdminSettingsPage() {
                 {/* Logo Upload */}
                 <div className="mb-8">
                   <label className="block text-sm font-medium text-neutral-700 mb-3">Logo</label>
-                  <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 bg-neutral-100 rounded-xl flex items-center justify-center">
-                      <Image src="/logo.png" alt="Logo" width={60} height={60} className="w-15 h-15" />
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-neutral-100 rounded-xl flex items-center justify-center shrink-0">
+                      <Image src="/logo.png" alt="Logo" width={60} height={60} className="w-12 h-12 sm:w-15 sm:h-15" />
                     </div>
-                    <button className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 flex items-center gap-2">
+                    <button className="px-3 sm:px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 flex items-center gap-2">
                       <Upload className="w-4 h-4" />
-                      Upload New Logo
+                      <span className="hidden sm:inline">Upload New Logo</span>
+                      <span className="sm:hidden">Upload</span>
                     </button>
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Company Name
@@ -349,7 +422,7 @@ export default function AdminSettingsPage() {
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -358,7 +431,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -367,7 +440,7 @@ export default function AdminSettingsPage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -378,7 +451,7 @@ export default function AdminSettingsPage() {
                       type="text"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -387,17 +460,17 @@ export default function AdminSettingsPage() {
                       type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-2">State</label>
                       <input
                         type="text"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
-                        className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                       />
                     </div>
                     <div>
@@ -406,7 +479,7 @@ export default function AdminSettingsPage() {
                         type="text"
                         value={zip}
                         onChange={(e) => setZip(e.target.value)}
-                        className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm sm:text-base"
                       />
                     </div>
                   </div>
@@ -417,11 +490,11 @@ export default function AdminSettingsPage() {
             {activeTab === 'pricing' && (
               <div>
                 <h2 className="text-lg font-semibold text-neutral-900 mb-2">Pricing</h2>
-                <p className="text-neutral-500 mb-6">
+                <p className="text-neutral-500 text-sm mb-6">
                   View your current pricing configuration. Contact CruLink support to make changes.
                 </p>
 
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+                <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
                   <p className="text-amber-800 text-sm">
                     Pricing is managed by CruLink to ensure accuracy. To request changes, please
                     contact support.
@@ -431,7 +504,7 @@ export default function AdminSettingsPage() {
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-medium text-neutral-900 mb-3">Material Pricing</h3>
-                    <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
+                    <div className="bg-neutral-50 rounded-lg p-3 sm:p-4 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Mild Steel</span>
                         <span className="text-neutral-900">$0.08 - $0.25 / sq in</span>
@@ -449,7 +522,7 @@ export default function AdminSettingsPage() {
 
                   <div>
                     <h3 className="font-medium text-neutral-900 mb-3">Volume Discounts</h3>
-                    <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
+                    <div className="bg-neutral-50 rounded-lg p-3 sm:p-4 space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-neutral-600">10-24 pieces</span>
                         <span className="text-green-600">5% off</span>
@@ -470,7 +543,7 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <button className="mt-6 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg text-sm font-medium hover:bg-red-50">
+                <button className="mt-6 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg text-sm font-medium hover:bg-red-50 w-full sm:w-auto">
                   Request Pricing Update
                 </button>
               </div>
@@ -489,7 +562,7 @@ export default function AdminSettingsPage() {
                       type="number"
                       value={standardLeadTime}
                       onChange={(e) => setStandardLeadTime(e.target.value)}
-                      className="w-32 px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full sm:w-32 px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                     <p className="text-sm text-neutral-500 mt-1">
                       Default lead time shown to customers
@@ -504,7 +577,7 @@ export default function AdminSettingsPage() {
                       type="number"
                       value={rushLeadTime}
                       onChange={(e) => setRushLeadTime(e.target.value)}
-                      className="w-32 px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full sm:w-32 px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                     <p className="text-sm text-neutral-500 mt-1">+25% rush fee applies</p>
                   </div>
@@ -517,7 +590,7 @@ export default function AdminSettingsPage() {
                       type="number"
                       value={superRushLeadTime}
                       onChange={(e) => setSuperRushLeadTime(e.target.value)}
-                      className="w-32 px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full sm:w-32 px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                     <p className="text-sm text-neutral-500 mt-1">+50% super rush fee applies</p>
                   </div>
@@ -529,11 +602,11 @@ export default function AdminSettingsPage() {
               <div>
                 <h2 className="text-lg font-semibold text-neutral-900 mb-6">Email Notifications</h2>
 
-                <div className="space-y-4">
-                  <label className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg cursor-pointer">
-                    <div>
-                      <p className="font-medium text-neutral-900">New Orders</p>
-                      <p className="text-sm text-neutral-500">
+                <div className="space-y-3 sm:space-y-4">
+                  <label className="flex items-start sm:items-center justify-between p-3 sm:p-4 bg-neutral-50 rounded-lg cursor-pointer gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-neutral-900 text-sm sm:text-base">New Orders</p>
+                      <p className="text-xs sm:text-sm text-neutral-500">
                         Get notified when a new order is placed
                       </p>
                     </div>
@@ -541,14 +614,14 @@ export default function AdminSettingsPage() {
                       type="checkbox"
                       checked={emailNewOrders}
                       onChange={(e) => setEmailNewOrders(e.target.checked)}
-                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] shrink-0"
                     />
                   </label>
 
-                  <label className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg cursor-pointer">
-                    <div>
-                      <p className="font-medium text-neutral-900">Customer Messages</p>
-                      <p className="text-sm text-neutral-500">
+                  <label className="flex items-start sm:items-center justify-between p-3 sm:p-4 bg-neutral-50 rounded-lg cursor-pointer gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-neutral-900 text-sm sm:text-base">Customer Messages</p>
+                      <p className="text-xs sm:text-sm text-neutral-500">
                         Get notified when a customer sends a message
                       </p>
                     </div>
@@ -556,14 +629,14 @@ export default function AdminSettingsPage() {
                       type="checkbox"
                       checked={emailMessages}
                       onChange={(e) => setEmailMessages(e.target.checked)}
-                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] shrink-0"
                     />
                   </label>
 
-                  <label className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg cursor-pointer">
-                    <div>
-                      <p className="font-medium text-neutral-900">Payments</p>
-                      <p className="text-sm text-neutral-500">
+                  <label className="flex items-start sm:items-center justify-between p-3 sm:p-4 bg-neutral-50 rounded-lg cursor-pointer gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-neutral-900 text-sm sm:text-base">Payments</p>
+                      <p className="text-xs sm:text-sm text-neutral-500">
                         Get notified when payments are processed
                       </p>
                     </div>
@@ -571,7 +644,7 @@ export default function AdminSettingsPage() {
                       type="checkbox"
                       checked={emailPayments}
                       onChange={(e) => setEmailPayments(e.target.checked)}
-                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                      className="w-5 h-5 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] shrink-0"
                     />
                   </label>
                 </div>
@@ -582,35 +655,35 @@ export default function AdminSettingsPage() {
               <div>
                 <h2 className="text-lg font-semibold text-neutral-900 mb-6">Team Members</h2>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-white font-medium">
+                <div className="space-y-3 sm:space-y-4 mb-6">
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-neutral-50 rounded-lg">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-white font-medium text-sm">
                         JB
                       </div>
-                      <div>
-                        <p className="font-medium text-neutral-900">John Browning</p>
-                        <p className="text-sm text-neutral-500">john@browningswelding.com</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-neutral-900 text-sm sm:text-base truncate">John Browning</p>
+                        <p className="text-xs sm:text-sm text-neutral-500 truncate">john@browningswelding.com</p>
                       </div>
                     </div>
-                    <span className="text-sm text-neutral-500">Owner</span>
+                    <span className="text-xs sm:text-sm text-neutral-500 shrink-0 ml-2">Owner</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-neutral-400 rounded-full flex items-center justify-center text-white font-medium">
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-neutral-50 rounded-lg">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-neutral-400 rounded-full flex items-center justify-center text-white font-medium text-sm">
                         MB
                       </div>
-                      <div>
-                        <p className="font-medium text-neutral-900">Mike Brown</p>
-                        <p className="text-sm text-neutral-500">mike@browningswelding.com</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-neutral-900 text-sm sm:text-base truncate">Mike Brown</p>
+                        <p className="text-xs sm:text-sm text-neutral-500 truncate">mike@browningswelding.com</p>
                       </div>
                     </div>
-                    <span className="text-sm text-neutral-500">Admin</span>
+                    <span className="text-xs sm:text-sm text-neutral-500 shrink-0 ml-2">Admin</span>
                   </div>
                 </div>
 
-                <button className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50">
+                <button className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 w-full sm:w-auto">
                   + Invite Team Member
                 </button>
               </div>
