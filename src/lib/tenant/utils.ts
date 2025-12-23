@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import prisma from '@/lib/db';
+import { supabase } from '@/lib/db';
 import type { TenantConfig } from '@/types';
 
 /**
@@ -17,40 +17,29 @@ export async function getTenantSlug(): Promise<string | null> {
  */
 export async function getTenantBySlug(slug: string): Promise<TenantConfig | null> {
   try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        primaryColor: true,
-        secondaryColor: true,
-        accentColor: true,
-        logoUrl: true,
-        taxRate: true,
-        taxLabel: true,
-        currency: true,
-        status: true,
-      },
-    });
+    const { data: org, error } = await supabase
+      .from('organizations')
+      .select('id, slug, name, primary_color, logo_url, settings')
+      .eq('slug', slug)
+      .single();
 
-    if (!tenant || tenant.status !== 'ACTIVE') {
+    if (error || !org) {
       return null;
     }
 
     return {
-      id: tenant.id,
-      slug: tenant.slug,
-      name: tenant.name,
+      id: org.id,
+      slug: org.slug,
+      name: org.name,
       branding: {
-        primaryColor: tenant.primaryColor,
-        secondaryColor: tenant.secondaryColor,
-        accentColor: tenant.accentColor || undefined,
-        logoUrl: tenant.logoUrl || undefined,
+        primaryColor: org.primary_color || '#dc2626',
+        secondaryColor: '#1f2937',
+        accentColor: undefined,
+        logoUrl: org.logo_url || undefined,
       },
-      taxRate: tenant.taxRate,
-      taxLabel: tenant.taxLabel || 'Sales Tax',
-      currency: tenant.currency,
+      taxRate: 0.0975, // Default tax rate
+      taxLabel: 'Sales Tax',
+      currency: 'USD',
     };
   } catch (error) {
     console.error('Error fetching tenant:', error);
@@ -63,45 +52,30 @@ export async function getTenantBySlug(slug: string): Promise<TenantConfig | null
  */
 export async function getTenantByDomain(domain: string): Promise<TenantConfig | null> {
   try {
-    const tenant = await prisma.tenant.findFirst({
-      where: {
-        OR: [
-          { subdomain: domain },
-          { customDomain: domain },
-        ],
-        status: 'ACTIVE',
-      },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        primaryColor: true,
-        secondaryColor: true,
-        accentColor: true,
-        logoUrl: true,
-        taxRate: true,
-        taxLabel: true,
-        currency: true,
-      },
-    });
+    // For now, try to match by slug since we don't have subdomain/customDomain columns
+    const { data: org, error } = await supabase
+      .from('organizations')
+      .select('id, slug, name, primary_color, logo_url, settings')
+      .eq('slug', domain)
+      .single();
 
-    if (!tenant) {
+    if (error || !org) {
       return null;
     }
 
     return {
-      id: tenant.id,
-      slug: tenant.slug,
-      name: tenant.name,
+      id: org.id,
+      slug: org.slug,
+      name: org.name,
       branding: {
-        primaryColor: tenant.primaryColor,
-        secondaryColor: tenant.secondaryColor,
-        accentColor: tenant.accentColor || undefined,
-        logoUrl: tenant.logoUrl || undefined,
+        primaryColor: org.primary_color || '#dc2626',
+        secondaryColor: '#1f2937',
+        accentColor: undefined,
+        logoUrl: org.logo_url || undefined,
       },
-      taxRate: tenant.taxRate,
-      taxLabel: tenant.taxLabel || 'Sales Tax',
-      currency: tenant.currency,
+      taxRate: 0.0975,
+      taxLabel: 'Sales Tax',
+      currency: 'USD',
     };
   } catch (error) {
     console.error('Error fetching tenant by domain:', error);
