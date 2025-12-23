@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -29,7 +29,7 @@ const softwareOptions = [
   'Other',
 ];
 
-export default function QuotePage() {
+function QuotePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -401,5 +401,21 @@ export default function QuotePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function QuoteLoading() {
+  return (
+    <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="text-neutral-500">Loading...</div>
+    </div>
+  );
+}
+
+export default function QuotePage() {
+  return (
+    <Suspense fallback={<QuoteLoading />}>
+      <QuotePageContent />
+    </Suspense>
   );
 }
