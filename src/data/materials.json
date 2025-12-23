@@ -1,0 +1,151 @@
+{
+  "categories": [
+    {
+      "id": "carbon-steel",
+      "name": "Carbon Steel",
+      "icon": "carbon-steel",
+      "image": "/images/materials/carbon-steel.jpg",
+      "description": "Durable and versatile, ideal for structural applications",
+      "subcategories": [
+        {
+          "id": "mild-steel",
+          "name": "Mild Steel",
+          "description": "General purpose steel, easy to weld and fabricate",
+          "thicknesses": [
+            { "gauge": "24 Gauge", "inches": 0.024, "mm": 0.61, "pricePerSqIn": 0.008 },
+            { "gauge": "22 Gauge", "inches": 0.030, "mm": 0.76, "pricePerSqIn": 0.010 },
+            { "gauge": "20 Gauge", "inches": 0.036, "mm": 0.91, "pricePerSqIn": 0.012 },
+            { "gauge": "18 Gauge", "inches": 0.048, "mm": 1.22, "pricePerSqIn": 0.015 },
+            { "gauge": "16 Gauge", "inches": 0.060, "mm": 1.52, "pricePerSqIn": 0.018 },
+            { "gauge": "14 Gauge", "inches": 0.075, "mm": 1.90, "pricePerSqIn": 0.022 },
+            { "gauge": "12 Gauge", "inches": 0.105, "mm": 2.67, "pricePerSqIn": 0.028 },
+            { "gauge": "11 Gauge", "inches": 0.120, "mm": 3.05, "pricePerSqIn": 0.032 },
+            { "gauge": "10 Gauge", "inches": 0.135, "mm": 3.43, "pricePerSqIn": 0.038 },
+            { "gauge": "3/16\"", "inches": 0.188, "mm": 4.76, "pricePerSqIn": 0.052 },
+            { "gauge": "1/4\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.068 },
+            { "gauge": "5/16\"", "inches": 0.313, "mm": 7.94, "pricePerSqIn": 0.085 },
+            { "gauge": "3/8\"", "inches": 0.375, "mm": 9.53, "pricePerSqIn": 0.102 },
+            { "gauge": "1/2\"", "inches": 0.500, "mm": 12.70, "pricePerSqIn": 0.135 }
+          ]
+        },
+        {
+          "id": "hr-steel",
+          "name": "Hot Rolled Steel",
+          "description": "Economical option with mill scale finish",
+          "thicknesses": [
+            { "gauge": "14 Gauge", "inches": 0.075, "mm": 1.90, "pricePerSqIn": 0.020 },
+            { "gauge": "12 Gauge", "inches": 0.105, "mm": 2.67, "pricePerSqIn": 0.025 },
+            { "gauge": "11 Gauge", "inches": 0.120, "mm": 3.05, "pricePerSqIn": 0.029 },
+            { "gauge": "10 Gauge", "inches": 0.135, "mm": 3.43, "pricePerSqIn": 0.034 },
+            { "gauge": "3/16\"", "inches": 0.188, "mm": 4.76, "pricePerSqIn": 0.048 },
+            { "gauge": "1/4\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.062 },
+            { "gauge": "5/16\"", "inches": 0.313, "mm": 7.94, "pricePerSqIn": 0.078 },
+            { "gauge": "3/8\"", "inches": 0.375, "mm": 9.53, "pricePerSqIn": 0.095 },
+            { "gauge": "1/2\"", "inches": 0.500, "mm": 12.70, "pricePerSqIn": 0.125 },
+            { "gauge": "5/8\"", "inches": 0.625, "mm": 15.88, "pricePerSqIn": 0.158 },
+            { "gauge": "3/4\"", "inches": 0.750, "mm": 19.05, "pricePerSqIn": 0.188 },
+            { "gauge": "1\"", "inches": 1.000, "mm": 25.40, "pricePerSqIn": 0.250 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stainless",
+      "name": "Stainless Steel",
+      "icon": "stainless",
+      "image": "/images/materials/stainless-steel.png",
+      "description": "Corrosion-resistant, ideal for food-grade and outdoor applications",
+      "subcategories": [
+        {
+          "id": "304-stainless",
+          "name": "304 Stainless Steel",
+          "description": "Most common stainless, excellent corrosion resistance",
+          "thicknesses": [
+            { "gauge": "24 Gauge", "inches": 0.024, "mm": 0.61, "pricePerSqIn": 0.025 },
+            { "gauge": "22 Gauge", "inches": 0.030, "mm": 0.76, "pricePerSqIn": 0.030 },
+            { "gauge": "20 Gauge", "inches": 0.036, "mm": 0.91, "pricePerSqIn": 0.038 },
+            { "gauge": "18 Gauge", "inches": 0.048, "mm": 1.22, "pricePerSqIn": 0.048 },
+            { "gauge": "16 Gauge", "inches": 0.060, "mm": 1.52, "pricePerSqIn": 0.058 },
+            { "gauge": "14 Gauge", "inches": 0.075, "mm": 1.90, "pricePerSqIn": 0.072 },
+            { "gauge": "12 Gauge", "inches": 0.105, "mm": 2.67, "pricePerSqIn": 0.095 },
+            { "gauge": "11 Gauge", "inches": 0.120, "mm": 3.05, "pricePerSqIn": 0.108 },
+            { "gauge": "10 Gauge", "inches": 0.135, "mm": 3.43, "pricePerSqIn": 0.125 },
+            { "gauge": "3/16\"", "inches": 0.188, "mm": 4.76, "pricePerSqIn": 0.168 },
+            { "gauge": "1/4\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.225 }
+          ]
+        },
+        {
+          "id": "316-stainless",
+          "name": "316 Stainless Steel",
+          "description": "Marine grade, superior corrosion resistance",
+          "thicknesses": [
+            { "gauge": "24 Gauge", "inches": 0.024, "mm": 0.61, "pricePerSqIn": 0.032 },
+            { "gauge": "22 Gauge", "inches": 0.030, "mm": 0.76, "pricePerSqIn": 0.038 },
+            { "gauge": "20 Gauge", "inches": 0.036, "mm": 0.91, "pricePerSqIn": 0.048 },
+            { "gauge": "18 Gauge", "inches": 0.048, "mm": 1.22, "pricePerSqIn": 0.062 },
+            { "gauge": "16 Gauge", "inches": 0.060, "mm": 1.52, "pricePerSqIn": 0.075 },
+            { "gauge": "14 Gauge", "inches": 0.075, "mm": 1.90, "pricePerSqIn": 0.092 },
+            { "gauge": "12 Gauge", "inches": 0.105, "mm": 2.67, "pricePerSqIn": 0.125 },
+            { "gauge": "10 Gauge", "inches": 0.135, "mm": 3.43, "pricePerSqIn": 0.162 },
+            { "gauge": "3/16\"", "inches": 0.188, "mm": 4.76, "pricePerSqIn": 0.218 },
+            { "gauge": "1/4\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.288 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aluminum",
+      "name": "Aluminum",
+      "icon": "aluminum",
+      "image": "/images/materials/aluminum.jpg",
+      "description": "Lightweight and corrosion-resistant",
+      "subcategories": [
+        {
+          "id": "5052-aluminum",
+          "name": "5052 Aluminum",
+          "description": "Excellent corrosion resistance, good weldability",
+          "thicknesses": [
+            { "gauge": "0.032\"", "inches": 0.032, "mm": 0.81, "pricePerSqIn": 0.015 },
+            { "gauge": "0.040\"", "inches": 0.040, "mm": 1.02, "pricePerSqIn": 0.018 },
+            { "gauge": "0.050\"", "inches": 0.050, "mm": 1.27, "pricePerSqIn": 0.022 },
+            { "gauge": "0.063\"", "inches": 0.063, "mm": 1.60, "pricePerSqIn": 0.028 },
+            { "gauge": "0.080\"", "inches": 0.080, "mm": 2.03, "pricePerSqIn": 0.035 },
+            { "gauge": "0.090\"", "inches": 0.090, "mm": 2.29, "pricePerSqIn": 0.040 },
+            { "gauge": "0.100\"", "inches": 0.100, "mm": 2.54, "pricePerSqIn": 0.045 },
+            { "gauge": "0.125\"", "inches": 0.125, "mm": 3.18, "pricePerSqIn": 0.055 },
+            { "gauge": "0.160\"", "inches": 0.160, "mm": 4.06, "pricePerSqIn": 0.070 },
+            { "gauge": "0.190\"", "inches": 0.190, "mm": 4.83, "pricePerSqIn": 0.085 },
+            { "gauge": "0.250\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.110 }
+          ]
+        },
+        {
+          "id": "6061-aluminum",
+          "name": "6061 Aluminum",
+          "description": "Structural grade, heat treatable",
+          "thicknesses": [
+            { "gauge": "0.040\"", "inches": 0.040, "mm": 1.02, "pricePerSqIn": 0.020 },
+            { "gauge": "0.050\"", "inches": 0.050, "mm": 1.27, "pricePerSqIn": 0.025 },
+            { "gauge": "0.063\"", "inches": 0.063, "mm": 1.60, "pricePerSqIn": 0.032 },
+            { "gauge": "0.080\"", "inches": 0.080, "mm": 2.03, "pricePerSqIn": 0.040 },
+            { "gauge": "0.090\"", "inches": 0.090, "mm": 2.29, "pricePerSqIn": 0.045 },
+            { "gauge": "0.100\"", "inches": 0.100, "mm": 2.54, "pricePerSqIn": 0.052 },
+            { "gauge": "0.125\"", "inches": 0.125, "mm": 3.18, "pricePerSqIn": 0.065 },
+            { "gauge": "0.190\"", "inches": 0.190, "mm": 4.83, "pricePerSqIn": 0.098 },
+            { "gauge": "0.250\"", "inches": 0.250, "mm": 6.35, "pricePerSqIn": 0.128 },
+            { "gauge": "0.375\"", "inches": 0.375, "mm": 9.53, "pricePerSqIn": 0.192 },
+            { "gauge": "0.500\"", "inches": 0.500, "mm": 12.70, "pricePerSqIn": 0.255 }
+          ]
+        }
+      ]
+    }
+  ],
+  "volumeDiscounts": [
+    { "minQty": 1, "maxQty": 9, "discount": 0 },
+    { "minQty": 10, "maxQty": 24, "discount": 0.05 },
+    { "minQty": 25, "maxQty": 49, "discount": 0.10 },
+    { "minQty": 50, "maxQty": 99, "discount": 0.15 },
+    { "minQty": 100, "maxQty": 249, "discount": 0.20 },
+    { "minQty": 250, "maxQty": 499, "discount": 0.25 },
+    { "minQty": 500, "maxQty": null, "discount": 0.30 }
+  ]
+}

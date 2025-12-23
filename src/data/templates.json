@@ -1,0 +1,151 @@
+{
+  "templates": [
+    {
+      "id": "rectangle",
+      "name": "Rectangle",
+      "description": "Simple rectangular shape with optional corner radius",
+      "icon": "square",
+      "category": "basic",
+      "popular": true,
+      "parameters": [
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 0.5, "max": 48, "default": 6, "step": 0.125 },
+        { "id": "height", "name": "Height", "type": "dimension", "unit": "in", "min": 0.5, "max": 48, "default": 4, "step": 0.125 },
+        { "id": "cornerRadius", "name": "Corner Radius", "type": "dimension", "unit": "in", "min": 0, "max": 6, "default": 0, "step": 0.0625 }
+      ]
+    },
+    {
+      "id": "circle",
+      "name": "Circle",
+      "description": "Perfect circle or ring shape",
+      "icon": "circle",
+      "category": "basic",
+      "popular": true,
+      "parameters": [
+        { "id": "diameter", "name": "Diameter", "type": "dimension", "unit": "in", "min": 0.5, "max": 48, "default": 4, "step": 0.125 },
+        { "id": "innerDiameter", "name": "Inner Diameter (Ring)", "type": "dimension", "unit": "in", "min": 0, "max": 47, "default": 0, "step": 0.125 }
+      ]
+    },
+    {
+      "id": "triangle",
+      "name": "Triangle",
+      "description": "Equilateral, isoceles, or custom triangle",
+      "icon": "triangle",
+      "category": "basic",
+      "popular": false,
+      "parameters": [
+        { "id": "base", "name": "Base", "type": "dimension", "unit": "in", "min": 0.5, "max": 48, "default": 4, "step": 0.125 },
+        { "id": "height", "name": "Height", "type": "dimension", "unit": "in", "min": 0.5, "max": 48, "default": 3, "step": 0.125 },
+        { "id": "cornerRadius", "name": "Corner Radius", "type": "dimension", "unit": "in", "min": 0, "max": 2, "default": 0, "step": 0.0625 }
+      ]
+    },
+    {
+      "id": "l-bracket",
+      "name": "L-Bracket",
+      "description": "90-degree angle bracket with mounting holes",
+      "icon": "bracket",
+      "category": "brackets",
+      "popular": true,
+      "parameters": [
+        { "id": "legA", "name": "Leg A Length", "type": "dimension", "unit": "in", "min": 1, "max": 24, "default": 4, "step": 0.125 },
+        { "id": "legB", "name": "Leg B Length", "type": "dimension", "unit": "in", "min": 1, "max": 24, "default": 3, "step": 0.125 },
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 0.5, "max": 12, "default": 1.5, "step": 0.125 },
+        { "id": "holeCount", "name": "Holes Per Leg", "type": "number", "min": 0, "max": 6, "default": 2, "step": 1 },
+        { "id": "holeDiameter", "name": "Hole Diameter", "type": "dimension", "unit": "in", "min": 0.125, "max": 1, "default": 0.25, "step": 0.0625 }
+      ],
+      "bendRequired": true
+    },
+    {
+      "id": "u-channel",
+      "name": "U-Channel",
+      "description": "Three-sided channel for structural support",
+      "icon": "channel",
+      "category": "brackets",
+      "popular": true,
+      "parameters": [
+        { "id": "length", "name": "Length", "type": "dimension", "unit": "in", "min": 2, "max": 48, "default": 8, "step": 0.125 },
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 1, "max": 12, "default": 2, "step": 0.125 },
+        { "id": "depth", "name": "Depth", "type": "dimension", "unit": "in", "min": 0.5, "max": 6, "default": 1, "step": 0.125 }
+      ],
+      "bendRequired": true
+    },
+    {
+      "id": "mounting-plate",
+      "name": "Mounting Plate",
+      "description": "Flat plate with customizable hole pattern",
+      "icon": "grid",
+      "category": "plates",
+      "popular": true,
+      "parameters": [
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 1, "max": 48, "default": 6, "step": 0.125 },
+        { "id": "height", "name": "Height", "type": "dimension", "unit": "in", "min": 1, "max": 48, "default": 4, "step": 0.125 },
+        { "id": "cornerRadius", "name": "Corner Radius", "type": "dimension", "unit": "in", "min": 0, "max": 3, "default": 0.25, "step": 0.0625 },
+        { "id": "holePattern", "name": "Hole Pattern", "type": "select", "options": ["corners", "grid", "slotted", "custom"], "default": "corners" },
+        { "id": "holeDiameter", "name": "Hole Diameter", "type": "dimension", "unit": "in", "min": 0.125, "max": 1, "default": 0.25, "step": 0.0625 },
+        { "id": "holeInset", "name": "Hole Inset", "type": "dimension", "unit": "in", "min": 0.25, "max": 3, "default": 0.5, "step": 0.125 }
+      ]
+    },
+    {
+      "id": "gusset",
+      "name": "Gusset Plate",
+      "description": "Triangular reinforcement plate",
+      "icon": "gusset",
+      "category": "plates",
+      "popular": false,
+      "parameters": [
+        { "id": "legA", "name": "Leg A", "type": "dimension", "unit": "in", "min": 1, "max": 24, "default": 4, "step": 0.125 },
+        { "id": "legB", "name": "Leg B", "type": "dimension", "unit": "in", "min": 1, "max": 24, "default": 4, "step": 0.125 },
+        { "id": "holeCount", "name": "Holes Per Leg", "type": "number", "min": 0, "max": 4, "default": 2, "step": 1 },
+        { "id": "holeDiameter", "name": "Hole Diameter", "type": "dimension", "unit": "in", "min": 0.125, "max": 1, "default": 0.3125, "step": 0.0625 }
+      ]
+    },
+    {
+      "id": "enclosure-panel",
+      "name": "Enclosure Panel",
+      "description": "Panel with cutouts for electronics enclosures",
+      "icon": "box",
+      "category": "enclosures",
+      "popular": true,
+      "parameters": [
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 2, "max": 48, "default": 8, "step": 0.125 },
+        { "id": "height", "name": "Height", "type": "dimension", "unit": "in", "min": 2, "max": 48, "default": 6, "step": 0.125 },
+        { "id": "flangeWidth", "name": "Flange Width", "type": "dimension", "unit": "in", "min": 0, "max": 2, "default": 0.5, "step": 0.125 },
+        { "id": "cornerRadius", "name": "Corner Radius", "type": "dimension", "unit": "in", "min": 0, "max": 1, "default": 0.125, "step": 0.0625 },
+        { "id": "mountingHoles", "name": "Mounting Holes", "type": "boolean", "default": true }
+      ],
+      "bendRequired": true
+    },
+    {
+      "id": "washer",
+      "name": "Washer",
+      "description": "Flat washer with custom dimensions",
+      "icon": "circle",
+      "category": "hardware",
+      "popular": false,
+      "parameters": [
+        { "id": "outerDiameter", "name": "Outer Diameter", "type": "dimension", "unit": "in", "min": 0.375, "max": 6, "default": 1, "step": 0.0625 },
+        { "id": "innerDiameter", "name": "Inner Diameter", "type": "dimension", "unit": "in", "min": 0.125, "max": 5, "default": 0.5, "step": 0.0625 }
+      ]
+    },
+    {
+      "id": "spacer",
+      "name": "Spacer / Shim",
+      "description": "Thin spacer with center hole",
+      "icon": "layers",
+      "category": "hardware",
+      "popular": false,
+      "parameters": [
+        { "id": "width", "name": "Width", "type": "dimension", "unit": "in", "min": 0.5, "max": 12, "default": 2, "step": 0.125 },
+        { "id": "height", "name": "Height", "type": "dimension", "unit": "in", "min": 0.5, "max": 12, "default": 2, "step": 0.125 },
+        { "id": "holeDiameter", "name": "Hole Diameter", "type": "dimension", "unit": "in", "min": 0.125, "max": 3, "default": 0.5, "step": 0.0625 },
+        { "id": "cornerRadius", "name": "Corner Radius", "type": "dimension", "unit": "in", "min": 0, "max": 3, "default": 0, "step": 0.0625 }
+      ]
+    }
+  ],
+  "categories": [
+    { "id": "basic", "name": "Basic Shapes", "order": 1, "icon": "shapes" },
+    { "id": "brackets", "name": "Brackets", "order": 2, "icon": "bracket" },
+    { "id": "plates", "name": "Plates", "order": 3, "icon": "square" },
+    { "id": "enclosures", "name": "Enclosures", "order": 4, "icon": "box" },
+    { "id": "hardware", "name": "Hardware", "order": 5, "icon": "settings" }
+  ]
+}
