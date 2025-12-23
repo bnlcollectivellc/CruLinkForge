@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -472,7 +472,7 @@ function QuoteSummaryModal({
   );
 }
 
-export default function Home() {
+function BuilderContent() {
   const {
     openSection,
     setOpenSection,
@@ -1327,5 +1327,23 @@ export default function Home() {
         services={services}
       />
     </main>
+  );
+}
+
+// Loading fallback for Suspense
+function BuilderLoading() {
+  return (
+    <main className="h-screen w-screen overflow-hidden bg-neutral-100 flex items-center justify-center">
+      <div className="text-neutral-400">Loading configurator...</div>
+    </main>
+  );
+}
+
+// Wrapper with Suspense boundary for useSearchParams
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={<BuilderLoading />}>
+      <BuilderContent />
+    </Suspense>
   );
 }
