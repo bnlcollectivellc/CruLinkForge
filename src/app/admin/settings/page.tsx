@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
@@ -22,12 +23,299 @@ import {
   Layers,
   Menu,
   X,
+  Palette,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Truck,
+  Percent,
 } from 'lucide-react';
 
+// Import pricing data
+import materialsData from '@/data/materials.json';
+import servicesData from '@/data/services.json';
+import finishesData from '@/data/finishes.json';
+
+// Color palette options
+const colorPalette = [
+  { id: 'red', name: 'Ruby Red', value: '#dc2626' },
+  { id: 'orange', name: 'Sunset Orange', value: '#ea580c' },
+  { id: 'amber', name: 'Golden Amber', value: '#d97706' },
+  { id: 'emerald', name: 'Emerald Green', value: '#059669' },
+  { id: 'teal', name: 'Ocean Teal', value: '#0d9488' },
+  { id: 'blue', name: 'Steel Blue', value: '#2563eb' },
+  { id: 'indigo', name: 'Deep Indigo', value: '#4f46e5' },
+  { id: 'purple', name: 'Royal Purple', value: '#7c3aed' },
+  { id: 'pink', name: 'Hot Pink', value: '#db2777' },
+  { id: 'slate', name: 'Industrial Slate', value: '#475569' },
+];
+
+// Collapsible Section Component for Pricing
+function PricingSection({
+  title,
+  icon: Icon,
+  children,
+  defaultOpen = false
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-neutral-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 sm:p-4 bg-neutral-50 hover:bg-neutral-100 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="w-4 h-4 text-neutral-500" />
+          <span className="font-medium text-neutral-900 text-sm sm:text-base">{title}</span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="p-3 sm:p-4 border-t border-neutral-200 bg-white">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Pricing Tab Component
+function PricingTab() {
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [expandedSubcategories, setExpandedSubcategories] = useState<string[]>([]);
+
+  const toggleCategory = (id: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSubcategory = (id: string) => {
+    setExpandedSubcategories(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  return (
+    <div>
+      <h2 className="text-lg font-semibold text-neutral-900 mb-2">Pricing</h2>
+      <p className="text-neutral-500 text-sm mb-4">
+        View your current pricing configuration. Contact CruLink support to make changes.
+      </p>
+
+      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+        <p className="text-amber-800 text-sm">
+          Pricing is managed by CruLink to ensure accuracy. To request changes, please contact support.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {/* Materials Section */}
+        <PricingSection title="Materials" icon={Layers} defaultOpen={true}>
+          <div className="space-y-2">
+            {materialsData.categories.map((category) => (
+              <div key={category.id} className="border border-neutral-100 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => toggleCategory(category.id)}
+                  className="w-full flex items-center justify-between p-2.5 bg-neutral-50 hover:bg-neutral-100 transition-colors"
+                >
+                  <span className="font-medium text-neutral-800 text-sm">{category.name}</span>
+                  <ChevronRight className={`w-4 h-4 text-neutral-400 transition-transform ${expandedCategories.includes(category.id) ? 'rotate-90' : ''}`} />
+                </button>
+
+                {expandedCategories.includes(category.id) && (
+                  <div className="border-t border-neutral-100">
+                    {category.subcategories.map((sub) => (
+                      <div key={sub.id} className="border-b border-neutral-50 last:border-b-0">
+                        <button
+                          onClick={() => toggleSubcategory(sub.id)}
+                          className="w-full flex items-center justify-between p-2 pl-4 hover:bg-neutral-50 transition-colors"
+                        >
+                          <span className="text-neutral-700 text-sm">{sub.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-neutral-400">
+                              {sub.thicknesses.length} gauges
+                            </span>
+                            <ChevronRight className={`w-3 h-3 text-neutral-400 transition-transform ${expandedSubcategories.includes(sub.id) ? 'rotate-90' : ''}`} />
+                          </div>
+                        </button>
+
+                        {expandedSubcategories.includes(sub.id) && (
+                          <div className="bg-neutral-50 p-2 pl-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                              {sub.thicknesses.map((t) => (
+                                <div key={t.gauge} className="flex justify-between text-xs bg-white rounded px-2 py-1.5 border border-neutral-100">
+                                  <span className="text-neutral-600">{t.gauge}</span>
+                                  <span className="text-neutral-900 font-medium">${t.pricePerSqIn.toFixed(3)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </PricingSection>
+
+        {/* Services Section */}
+        <PricingSection title="Services" icon={Settings}>
+          <div className="space-y-1.5">
+            {servicesData.services.map((service) => (
+              <div key={service.id} className="flex justify-between items-center text-sm py-1.5 border-b border-neutral-50 last:border-b-0">
+                <span className="text-neutral-700">{service.name}</span>
+                <span className="text-neutral-900 font-medium text-right">
+                  {service.included ? (
+                    <span className="text-green-600">Included</span>
+                  ) : service.basePrice && service.pricePerCut ? (
+                    `$${service.basePrice} + $${service.pricePerCut}/cut`
+                  ) : service.basePrice && service.pricePerBend ? (
+                    `$${service.basePrice} setup + $${service.pricePerBend}/bend`
+                  ) : service.pricePerHole ? (
+                    `$${service.pricePerHole}/hole`
+                  ) : service.basePrice && service.pricePerSqIn ? (
+                    `$${service.basePrice} + $${service.pricePerSqIn}/sq in`
+                  ) : service.types ? (
+                    <span className="text-neutral-500 text-xs">Multiple types</span>
+                  ) : (
+                    <span className="text-neutral-500 text-xs">See options</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </PricingSection>
+
+        {/* Finishes Section */}
+        <PricingSection title="Finishes" icon={Palette}>
+          <div className="overflow-x-auto -mx-3 sm:-mx-4 px-3 sm:px-4">
+            <table className="w-full text-sm min-w-[400px]">
+              <thead>
+                <tr className="text-left text-neutral-500 text-xs border-b border-neutral-100">
+                  <th className="pb-2 font-medium">Finish</th>
+                  <th className="pb-2 font-medium text-center">Multiplier</th>
+                  <th className="pb-2 font-medium text-center">Lead Time</th>
+                  <th className="pb-2 font-medium text-right">Upcharge</th>
+                </tr>
+              </thead>
+              <tbody>
+                {finishesData.finishes.map((finish) => {
+                  const upcharges = finish.colors?.map(c => c.upcharge).filter(u => u > 0) ||
+                                   finish.options?.map(o => o.upcharge).filter(u => u > 0) || [];
+                  const maxUpcharge = upcharges.length > 0 ? Math.max(...upcharges) : 0;
+
+                  return (
+                    <tr key={finish.id} className="border-b border-neutral-50 last:border-b-0">
+                      <td className="py-2 text-neutral-700">{finish.name}</td>
+                      <td className="py-2 text-center text-neutral-900">{finish.priceMultiplier.toFixed(2)}x</td>
+                      <td className="py-2 text-center text-neutral-600">{finish.leadTimeDays}d</td>
+                      <td className="py-2 text-right text-neutral-900">
+                        {maxUpcharge > 0 ? `+$0-${maxUpcharge}` : '$0'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </PricingSection>
+
+        {/* Volume Discounts Section */}
+        <PricingSection title="Volume Discounts" icon={Percent}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {materialsData.volumeDiscounts.filter(d => d.discount > 0).map((discount, idx) => (
+              <div key={idx} className="flex justify-between items-center bg-green-50 rounded-lg px-3 py-2">
+                <span className="text-neutral-700 text-sm">
+                  {discount.minQty}-{discount.maxQty || '∞'}
+                </span>
+                <span className="text-green-600 font-medium text-sm">
+                  {(discount.discount * 100).toFixed(0)}% off
+                </span>
+              </div>
+            ))}
+          </div>
+        </PricingSection>
+
+        {/* Shipping & Tax Section */}
+        <PricingSection title="Shipping & Tax" icon={Truck}>
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-neutral-700 mb-2">Shipping Options</div>
+            {servicesData.shipping.options.map((option) => (
+              <div key={option.id} className="flex justify-between text-sm py-1.5 border-b border-neutral-50 last:border-b-0">
+                <span className="text-neutral-600">{option.name}</span>
+                <span className="text-neutral-900 font-medium">
+                  {option.price === 0 ? 'Free' : option.calculated ? 'Calculated' : `$${option.price}`}
+                </span>
+              </div>
+            ))}
+            <div className="pt-2 mt-2 border-t border-neutral-200">
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-600">Sales Tax</span>
+                <span className="text-neutral-900 font-medium">
+                  {(servicesData.shipping.taxRate * 100).toFixed(1)}% ({servicesData.shipping.taxNote})
+                </span>
+              </div>
+            </div>
+          </div>
+        </PricingSection>
+      </div>
+
+      <button className="mt-6 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg text-sm font-medium hover:bg-red-50 w-full sm:w-auto">
+        Request Pricing Update
+      </button>
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('storefront');
   const [isSaving, setIsSaving] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('forge_user');
+    router.push('/');
+  };
+
+  // Brand color
+  const [selectedColor, setSelectedColor] = useState('#dc2626');
+
+  // Load saved settings on mount
+  useEffect(() => {
+    const savedColor = localStorage.getItem('forge_primary_color');
+    if (savedColor) {
+      setSelectedColor(savedColor);
+    }
+
+    // Load storefront settings
+    const savedStorefront = localStorage.getItem('forge_storefront');
+    if (savedStorefront) {
+      const settings = JSON.parse(savedStorefront);
+      if (settings.heroHeading) setHeroHeading(settings.heroHeading);
+      if (settings.heroAccent) setHeroAccent(settings.heroAccent);
+      if (settings.heroSubheading) setHeroSubheading(settings.heroSubheading);
+      if (settings.ctaButtonText) setCtaButtonText(settings.ctaButtonText);
+      if (settings.ctaSecondaryText) setCtaSecondaryText(settings.ctaSecondaryText);
+    }
+  }, []);
+
+  // Handle color selection
+  const handleColorSelect = (colorValue: string) => {
+    setSelectedColor(colorValue);
+    localStorage.setItem('forge_primary_color', colorValue);
+    // Apply immediately to CSS variable
+    document.documentElement.style.setProperty('--color-primary', colorValue);
+  };
 
   // Company settings
   const [companyName, setCompanyName] = useState("Browning's Welding & Fabrication");
@@ -58,8 +346,20 @@ export default function AdminSettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Save storefront settings to localStorage
+    const storefrontSettings = {
+      heroHeading,
+      heroAccent,
+      heroSubheading,
+      ctaButtonText,
+      ctaSecondaryText,
+      heroImageUrl,
+    };
+    localStorage.setItem('forge_storefront', JSON.stringify(storefrontSettings));
+
+    // Simulate API call for other settings
+    await new Promise((resolve) => setTimeout(resolve, 500));
     setIsSaving(false);
   };
 
@@ -122,7 +422,10 @@ export default function AdminSettingsPage() {
                 {link.label}
               </Link>
             ))}
-            <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full"
+            >
               <LogOut className="w-5 h-5" />
               Sign Out
             </button>
@@ -160,7 +463,10 @@ export default function AdminSettingsPage() {
         </nav>
 
         <div className="p-4 border-t border-neutral-200">
-          <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full"
+          >
             <LogOut className="w-5 h-5" />
             Sign Out
           </button>
@@ -238,7 +544,7 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
                     <h2 className="text-lg font-semibold text-neutral-900">Storefront</h2>
-                    <p className="text-sm text-neutral-500">Customize your landing page appearance</p>
+                    <p className="text-sm text-neutral-500">Click any text below to edit it directly</p>
                   </div>
                   <Link
                     href="/"
@@ -246,151 +552,127 @@ export default function AdminSettingsPage() {
                     className="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
                   >
                     <Eye className="w-4 h-4" />
-                    Preview
+                    View Live
                   </Link>
                 </div>
 
-                {/* Hero Section Editor */}
-                <div className="border border-neutral-200 rounded-xl overflow-hidden mb-6">
-                  <div className="bg-neutral-50 px-4 py-2 border-b border-neutral-200">
-                    <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Hero Section</span>
+                {/* Brand Color Picker */}
+                <div className="flex items-center gap-4 mb-6 p-4 bg-neutral-50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-neutral-500" />
+                    <span className="text-sm font-medium text-neutral-700">Brand Color:</span>
                   </div>
-                  <div className="p-4 sm:p-6">
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      {/* Left side - Text fields stacked */}
-                      <div className="flex-1 space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                              <Type className="w-4 h-4 inline mr-2" />
-                              Heading Line 1
-                            </label>
-                            <input
-                              type="text"
-                              value={heroHeading}
-                              onChange={(e) => setHeroHeading(e.target.value)}
-                              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold text-sm sm:text-base"
-                              placeholder="Custom Metal Parts,"
-                            />
+                  <div className="flex gap-2">
+                    {colorPalette.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => handleColorSelect(color.value)}
+                        className={`w-8 h-8 rounded-lg transition-all hover:scale-110 ${
+                          selectedColor === color.value
+                            ? 'ring-2 ring-offset-2 ring-neutral-900 scale-110'
+                            : ''
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        title={color.name}
+                      >
+                        {selectedColor === color.value && (
+                          <Check className="w-4 h-4 text-white mx-auto" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Editable Preview - Looks like the real landing page */}
+                <div className="border-2 border-dashed border-neutral-300 rounded-xl overflow-hidden bg-white">
+                  <div className="bg-neutral-100 px-4 py-2 border-b border-neutral-200 flex items-center justify-between">
+                    <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Editable Preview</span>
+                    <span className="text-xs text-neutral-400">Click text to edit</span>
+                  </div>
+
+                  {/* Simulated Landing Page */}
+                  <div className="p-6 sm:p-8 lg:p-10">
+                    <div className="max-w-2xl">
+                      {/* Editable Hero Heading */}
+                      <div className="mb-2">
+                        <input
+                          type="text"
+                          value={heroHeading}
+                          onChange={(e) => setHeroHeading(e.target.value)}
+                          className="w-full text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 bg-transparent border-2 border-transparent hover:border-neutral-200 focus:border-[var(--color-primary)] focus:outline-none rounded-lg px-2 py-1 -mx-2 transition-colors"
+                          placeholder="Your Heading Here"
+                        />
+                      </div>
+
+                      {/* Editable Accent Line */}
+                      <div className="mb-6">
+                        <input
+                          type="text"
+                          value={heroAccent}
+                          onChange={(e) => setHeroAccent(e.target.value)}
+                          className="w-full text-3xl sm:text-4xl lg:text-5xl font-bold bg-transparent border-2 border-transparent hover:border-neutral-200 focus:border-[var(--color-primary)] focus:outline-none rounded-lg px-2 py-1 -mx-2 transition-colors"
+                          style={{ color: selectedColor }}
+                          placeholder="Accent Text"
+                        />
+                      </div>
+
+                      {/* Editable Description */}
+                      <div className="mb-8">
+                        <textarea
+                          value={heroSubheading}
+                          onChange={(e) => setHeroSubheading(e.target.value)}
+                          rows={2}
+                          className="w-full text-lg text-neutral-600 bg-transparent border-2 border-transparent hover:border-neutral-200 focus:border-[var(--color-primary)] focus:outline-none rounded-lg px-2 py-1 -mx-2 resize-none transition-colors"
+                          placeholder="Your description text here..."
+                        />
+                      </div>
+
+                      {/* Preview Cards (non-editable) */}
+                      <div className="grid grid-cols-3 gap-4 mb-6">
+                        <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm">
+                          <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center mb-3">
+                            <Layers className="w-5 h-5" style={{ color: selectedColor }} />
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                              Line 2 <span className="text-[var(--color-primary)]">(accent)</span>
-                            </label>
-                            <input
-                              type="text"
-                              value={heroAccent}
-                              onChange={(e) => setHeroAccent(e.target.value)}
-                              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent font-semibold text-[var(--color-primary)] text-sm sm:text-base"
-                              placeholder="Instant Quotes"
-                            />
-                          </div>
+                          <h3 className="font-semibold text-neutral-900 mb-1 text-base">Parts Builder</h3>
+                          <p className="text-sm text-neutral-500">Customize templates</p>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Description
-                          </label>
-                          <textarea
-                            value={heroSubheading}
-                            onChange={(e) => setHeroSubheading(e.target.value)}
-                            rows={3}
-                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none text-sm sm:text-base"
-                            placeholder="Supporting text..."
-                          />
+                        <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm">
+                          <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center mb-3">
+                            <Type className="w-5 h-5" style={{ color: selectedColor }} />
+                          </div>
+                          <h3 className="font-semibold text-neutral-900 mb-1 text-base">Design Services</h3>
+                          <p className="text-sm text-neutral-500">We create files</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                              Primary Button
-                            </label>
-                            <input
-                              type="text"
-                              value={ctaButtonText}
-                              onChange={(e) => setCtaButtonText(e.target.value)}
-                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
-                              placeholder="Start with Template"
-                            />
+                        <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm">
+                          <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center mb-3">
+                            <ImageIcon className="w-5 h-5" style={{ color: selectedColor }} />
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                              Secondary Button
-                            </label>
-                            <input
-                              type="text"
-                              value={ctaSecondaryText}
-                              onChange={(e) => setCtaSecondaryText(e.target.value)}
-                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
-                              placeholder="Upload CAD File"
-                            />
-                          </div>
+                          <h3 className="font-semibold text-neutral-900 mb-1 text-base">Custom Quote</h3>
+                          <p className="text-sm text-neutral-500">Unique projects</p>
                         </div>
                       </div>
 
-                      {/* Right side - Hero image upload */}
-                      <div className="w-full lg:w-48 shrink-0">
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                          <ImageIcon className="w-4 h-4 inline mr-2" />
-                          Background
-                        </label>
-                        <div className="relative aspect-video lg:aspect-[4/3] bg-neutral-100 rounded-xl overflow-hidden border-2 border-dashed border-neutral-300 hover:border-[var(--color-primary)] transition-colors group">
-                          {heroImageUrl ? (
-                            <Image
-                              src={heroImageUrl}
-                              alt="Hero preview"
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <ImageIcon className="w-10 h-10 text-neutral-300" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-neutral-700 flex items-center gap-2">
-                              <Upload className="w-4 h-4" />
-                              Replace
-                            </button>
-                          </div>
+                      {/* Preview Drop Zone (non-editable) */}
+                      <div className="rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4">
+                        <div className="flex items-center justify-center gap-3 text-neutral-400">
+                          <Upload className="w-5 h-5" />
+                          <span className="text-sm">Drop files here for a custom quote</span>
+                          <button
+                            className="px-4 py-2 text-white rounded-lg text-sm font-medium"
+                            style={{ backgroundColor: selectedColor }}
+                          >
+                            BROWSE
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Preview */}
-                <div className="border border-neutral-200 rounded-xl overflow-hidden">
-                  <div className="bg-neutral-50 px-4 py-2 border-b border-neutral-200">
-                    <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Preview</span>
-                  </div>
-                  <div className="relative bg-white overflow-hidden">
-                    <div className="flex flex-col sm:flex-row items-center p-4 sm:p-6 gap-4 sm:gap-6">
-                      {/* Left - Content */}
-                      <div className="flex-1 text-center sm:text-left">
-                        <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 leading-tight">
-                          {heroHeading || 'Custom Metal Parts,'}
-                          <br />
-                          <span className="text-[var(--color-primary)]">{heroAccent || 'Instant Quotes'}</span>
-                        </h3>
-                        <p className="text-xs sm:text-sm text-neutral-600 mt-2 sm:mt-3 line-clamp-2">{heroSubheading || 'Your description text'}</p>
-                        <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mt-3 sm:mt-4">
-                          <span className="px-3 py-1.5 bg-[var(--color-primary)] text-white text-xs font-medium rounded-lg inline-flex items-center gap-1">
-                            {ctaButtonText || 'Primary CTA'} →
-                          </span>
-                          <span className="px-3 py-1.5 bg-white text-neutral-700 text-xs font-medium rounded-lg border border-neutral-300 inline-flex items-center gap-1">
-                            ↑ {ctaSecondaryText || 'Secondary CTA'}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Right - 3D Preview placeholder */}
-                      <div className="w-full sm:w-40 h-24 sm:h-28 bg-neutral-100 rounded-xl flex items-center justify-center shrink-0">
-                        <div className="text-center text-neutral-400">
-                          <Layers className="w-6 h-6 mx-auto mb-1" />
-                          <span className="text-xs">3D Preview</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* Tip */}
+                <p className="text-xs text-neutral-400 mt-4 text-center">
+                  Changes are saved when you click &quot;Save Changes&quot; above
+                </p>
               </div>
             )}
 
@@ -488,65 +770,7 @@ export default function AdminSettingsPage() {
             )}
 
             {activeTab === 'pricing' && (
-              <div>
-                <h2 className="text-lg font-semibold text-neutral-900 mb-2">Pricing</h2>
-                <p className="text-neutral-500 text-sm mb-6">
-                  View your current pricing configuration. Contact CruLink support to make changes.
-                </p>
-
-                <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-                  <p className="text-amber-800 text-sm">
-                    Pricing is managed by CruLink to ensure accuracy. To request changes, please
-                    contact support.
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-medium text-neutral-900 mb-3">Material Pricing</h3>
-                    <div className="bg-neutral-50 rounded-lg p-3 sm:p-4 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Mild Steel</span>
-                        <span className="text-neutral-900">$0.08 - $0.25 / sq in</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Stainless Steel</span>
-                        <span className="text-neutral-900">$0.15 - $0.45 / sq in</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Aluminum</span>
-                        <span className="text-neutral-900">$0.10 - $0.30 / sq in</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-neutral-900 mb-3">Volume Discounts</h3>
-                    <div className="bg-neutral-50 rounded-lg p-3 sm:p-4 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">10-24 pieces</span>
-                        <span className="text-green-600">5% off</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">25-49 pieces</span>
-                        <span className="text-green-600">10% off</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">50-99 pieces</span>
-                        <span className="text-green-600">15% off</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">100+ pieces</span>
-                        <span className="text-green-600">20% off</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="mt-6 px-4 py-2 border border-[var(--color-primary)] text-[var(--color-primary)] rounded-lg text-sm font-medium hover:bg-red-50 w-full sm:w-auto">
-                  Request Pricing Update
-                </button>
-              </div>
+              <PricingTab />
             )}
 
             {activeTab === 'leadtimes' && (
