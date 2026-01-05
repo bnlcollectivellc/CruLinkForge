@@ -131,7 +131,9 @@ function MaterialCard({
   isExpanded,
   onSelect,
   onToggleExpand,
+  selectedSubcategory,
   selectedThickness,
+  onSelectSubcategory,
   onSelectThickness,
 }: {
   category: {
@@ -140,16 +142,19 @@ function MaterialCard({
     icon: string;
     image: string;
     description: string;
-    subcategories: { id: string; thicknesses: { gauge: string; inches: number; mm: number; pricePerSqIn: number }[] }[];
+    subcategories: { id: string; name: string; thicknesses: { gauge: string; inches: number; mm: number; pricePerSqIn: number }[] }[];
   };
   isSelected: boolean;
   isExpanded: boolean;
   onSelect: () => void;
   onToggleExpand: () => void;
+  selectedSubcategory: string | null;
   selectedThickness: { gauge: string; pricePerSqIn: number } | null;
-  onSelectThickness: (thickness: { gauge: string; inches: number; mm: number; pricePerSqIn: number }) => void;
+  onSelectSubcategory: (subcategoryId: string) => void;
+  onSelectThickness: (subcategoryId: string, thickness: { gauge: string; inches: number; mm: number; pricePerSqIn: number }) => void;
 }) {
-  const thicknesses = category.subcategories[0]?.thicknesses || [];
+  const currentSubcategory = category.subcategories.find(s => s.id === selectedSubcategory) || category.subcategories[0];
+  const thicknesses = currentSubcategory?.thicknesses || [];
 
   return (
     <div
@@ -177,7 +182,9 @@ function MaterialCard({
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-neutral-900">{category.name}</div>
             {selectedThickness && isSelected && (
-              <div className="text-xs text-[var(--color-primary)] mt-0.5">{selectedThickness.gauge}</div>
+              <div className="text-xs text-[var(--color-primary)] mt-0.5">
+                {currentSubcategory?.name} - {selectedThickness.gauge}
+              </div>
             )}
           </div>
           <ChevronDown
@@ -186,16 +193,38 @@ function MaterialCard({
         </div>
       </button>
 
-      {/* Expanded gauge options */}
+      {/* Expanded options */}
       <div className={`accordion-content ${isExpanded ? 'open' : ''}`}>
         <div className="accordion-inner">
           <div className="px-4 pb-4 pt-0 border-t border-neutral-100">
+            {/* Subcategory selector - only show if more than one subcategory */}
+            {category.subcategories.length > 1 && (
+              <>
+                <div className="text-xs text-neutral-500 mb-2 mt-4">Select Type</div>
+                <div className="flex gap-2 mb-4">
+                  {category.subcategories.map((sub) => (
+                    <button
+                      key={sub.id}
+                      onClick={() => onSelectSubcategory(sub.id)}
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        (selectedSubcategory === sub.id || (!selectedSubcategory && sub.id === category.subcategories[0].id))
+                          ? 'bg-[var(--color-primary)] text-white'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                      }`}
+                    >
+                      {sub.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
             <div className="text-xs text-neutral-500 mb-3 mt-4">Select Gauge</div>
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
               {thicknesses.map((thickness) => (
                 <button
                   key={thickness.gauge}
-                  onClick={() => onSelectThickness(thickness)}
+                  onClick={() => onSelectThickness(currentSubcategory.id, thickness)}
                   className={`w-full p-2.5 rounded-lg text-left text-sm transition-all flex justify-between ${
                     selectedThickness?.gauge === thickness.gauge && isSelected
                       ? 'bg-[var(--color-primary)] text-white'
@@ -335,17 +364,19 @@ function QuoteSummaryModal({
     unitPrice: number;
   } | null;
   selectedTemplate: { id: string; name: string } | null;
-  selectedMaterial: { categoryId: string; thickness: { gauge: string } } | null;
+  selectedMaterial: { categoryId: string; subcategoryId: string; thickness: { gauge: string } } | null;
   selectedFinish: { id: string } | null;
   selectedServices: { id: string; options?: Record<string, string | number | boolean>; quantity?: number }[];
   quantity: number;
-  materials: { id: string; name: string }[];
+  materials: { id: string; name: string; subcategories: { id: string; name: string }[] }[];
   finishes: { id: string; name: string }[];
   services: { id: string; name: string }[];
 }) {
   if (!isOpen) return null;
 
-  const materialName = materials.find((m) => m.id === selectedMaterial?.categoryId)?.name || 'Not selected';
+  const materialCategory = materials.find((m) => m.id === selectedMaterial?.categoryId);
+  const materialSubcategory = materialCategory?.subcategories.find((s) => s.id === selectedMaterial?.subcategoryId);
+  const materialName = materialSubcategory?.name || materialCategory?.name || 'Not selected';
   const finishName = selectedFinish ? finishes.find((f) => f.id === selectedFinish.id)?.name || 'None' : 'None (Raw Metal)';
   const selectedServiceNames = selectedServices.map(s => services.find(svc => svc.id === s.id)?.name).filter(Boolean);
 
@@ -657,7 +688,8 @@ function BuilderContent() {
   const getMaterialSubtitle = () => {
     if (selectedMaterial) {
       const category = materials.find((m) => m.id === selectedMaterial.categoryId);
-      return `${category?.name || ''} - ${selectedMaterial.thickness.gauge}`;
+      const subcategory = category?.subcategories.find((s) => s.id === selectedMaterial.subcategoryId);
+      return `${subcategory?.name || category?.name || ''} - ${selectedMaterial.thickness.gauge}`;
     }
     return 'Select material';
   };
@@ -919,11 +951,12 @@ function BuilderContent() {
                   isExpanded={expandedMaterial === category.id}
                   onSelect={() => {
                     if (selectedMaterial?.categoryId !== category.id) {
-                      const firstThickness = category.subcategories[0]?.thicknesses[0];
+                      const firstSubcategory = category.subcategories[0];
+                      const firstThickness = firstSubcategory?.thicknesses[0];
                       if (firstThickness) {
                         setSelectedMaterial({
                           categoryId: category.id,
-                          subcategoryId: category.subcategories[0].id,
+                          subcategoryId: firstSubcategory.id,
                           thickness: firstThickness,
                         });
                       }
@@ -932,11 +965,21 @@ function BuilderContent() {
                   onToggleExpand={() => {
                     setExpandedMaterial(expandedMaterial === category.id ? null : category.id);
                   }}
+                  selectedSubcategory={
+                    selectedMaterial?.categoryId === category.id ? selectedMaterial.subcategoryId : null
+                  }
                   selectedThickness={
                     selectedMaterial?.categoryId === category.id ? selectedMaterial.thickness : null
                   }
-                  onSelectThickness={(thickness) => {
-                    handleMaterialSelect(category.id, category.subcategories[0].id, thickness);
+                  onSelectSubcategory={(subcategoryId) => {
+                    const subcategory = category.subcategories.find(s => s.id === subcategoryId);
+                    const firstThickness = subcategory?.thicknesses[0];
+                    if (firstThickness) {
+                      handleMaterialSelect(category.id, subcategoryId, firstThickness);
+                    }
+                  }}
+                  onSelectThickness={(subcategoryId, thickness) => {
+                    handleMaterialSelect(category.id, subcategoryId, thickness);
                   }}
                 />
               ))}
