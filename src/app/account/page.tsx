@@ -13,8 +13,11 @@ import {
   LogOut,
   User,
   Settings,
-  ArrowLeft,
+  Home,
+  Menu,
   X,
+  MapPin,
+  Save,
 } from 'lucide-react';
 
 // Sample orders data (would come from API)
@@ -61,7 +64,9 @@ const statusConfig: Record<string, { icon: typeof Package; color: string; bgColo
 export default function AccountPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ email: string; name: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState('orders');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Check for logged in user
@@ -79,6 +84,18 @@ export default function AccountPage() {
     router.push('/');
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsSaving(false);
+  };
+
+  const navLinks = [
+    { id: 'orders', icon: Package, label: 'Orders' },
+    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'addresses', icon: MapPin, label: 'Addresses' },
+  ];
+
   if (!user) {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
@@ -88,252 +105,293 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo.png" alt="Logo" width={40} height={40} className="h-10 w-auto" />
-            </Link>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="text-sm text-neutral-600 hover:text-neutral-900 flex items-center gap-1"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Back to Store</span>
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign Out</span>
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-neutral-100 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-white border-b border-neutral-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <Link href="/">
+          <Image src="/logo.png" alt="Logo" width={36} height={36} className="h-9 w-auto" />
+        </Link>
+        <div className="flex items-center gap-2">
+          {activeTab !== 'orders' && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+            >
+              <Save className="w-4 h-4" />
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 hover:bg-neutral-100 rounded-lg"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Mobile Navigation Dropdown */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-b border-neutral-200 px-4 py-3">
+          <nav className="space-y-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => { setActiveTab(link.id); setMobileMenuOpen(false); }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full ${
+                  activeTab === link.id
+                    ? 'bg-[var(--color-primary)] text-white'
+                    : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+              >
+                <link.icon className="w-5 h-5" />
+                {link.label}
+              </button>
+            ))}
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-neutral-200 flex-col shrink-0">
+        <div className="p-6 border-b border-neutral-200">
+          <Link href="/">
+            <Image src="/logo.png" alt="Logo" width={48} height={48} className="h-12 w-auto hover:opacity-80 transition-opacity" />
+          </Link>
+          <p className="text-xs text-neutral-500 mt-2">Customer Portal</p>
+        </div>
+
         {/* User Info */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-white text-lg sm:text-xl font-semibold">
+        <div className="p-4 border-b border-neutral-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-white font-medium">
               {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-xl font-semibold text-neutral-900 truncate">
-                {user.name || 'Welcome back!'}
-              </h1>
-              <p className="text-sm text-neutral-500 truncate">{user.email}</p>
+            <div className="min-w-0">
+              <p className="font-medium text-neutral-900 truncate text-sm">{user.name || 'Customer'}</p>
+              <p className="text-xs text-neutral-500 truncate">{user.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6">
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            {navLinks.map((link) => (
+              <li key={link.id}>
+                <button
+                  onClick={() => setActiveTab(link.id)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full ${
+                    activeTab === link.id
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-neutral-600 hover:bg-neutral-100'
+                  }`}
+                >
+                  <link.icon className="w-5 h-5" />
+                  {link.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="p-4 border-t border-neutral-200">
           <button
-            onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'orders'
-                ? 'bg-[var(--color-primary)] text-white'
-                : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50'
-            }`}
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full"
           >
-            <Package className="w-4 h-4" />
-            My Orders
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'settings'
-                ? 'bg-[var(--color-primary)] text-white'
-                : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            Settings
+            <LogOut className="w-5 h-5" />
+            Sign Out
           </button>
         </div>
+      </aside>
 
-        {/* Orders Tab */}
-        {activeTab === 'orders' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-neutral-900">Order History</h2>
-              <Link
-                href="/builder"
-                className="text-sm text-[var(--color-primary)] hover:underline font-medium"
-              >
-                + New Order
-              </Link>
-            </div>
+      {/* Main Content */}
+      <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">My Account</h1>
+            <p className="text-neutral-600">Manage your orders and profile</p>
+          </div>
+          {activeTab !== 'orders' && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-6 py-2.5 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
+        </div>
 
-            {sampleOrders.length === 0 ? (
-              <div className="bg-white rounded-xl border border-neutral-200 p-8 text-center">
-                <Package className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-neutral-900 mb-2">No orders yet</h3>
-                <p className="text-neutral-500 mb-4">Start by creating your first custom part order.</p>
-                <Link
-                  href="/builder"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
-                >
-                  Get Started
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {sampleOrders.map((order) => {
-                  const status = statusConfig[order.status] || statusConfig.new;
-                  const StatusIcon = status.icon;
+        {/* Content */}
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-4 sm:p-6">
+            {/* Orders Tab */}
+            {activeTab === 'orders' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-neutral-900">Order History</h2>
+                    <p className="text-sm text-neutral-500">View and track your orders</p>
+                  </div>
+                  <Link
+                    href="/builder"
+                    className="text-sm text-[var(--color-primary)] hover:underline font-medium"
+                  >
+                    + New Order
+                  </Link>
+                </div>
 
-                  return (
+                {sampleOrders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-neutral-900 mb-2">No orders yet</h3>
+                    <p className="text-neutral-500 mb-4">Start by creating your first custom part order.</p>
                     <Link
-                      key={order.id}
-                      href={`/order/${order.id}`}
-                      className="block bg-white rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 hover:shadow-sm transition-all"
+                      href="/builder"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90"
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${status.bgColor} flex items-center justify-center shrink-0`}>
-                            <StatusIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${status.color}`} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold text-neutral-900 text-sm sm:text-base">{order.id}</span>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}>
-                                {status.label}
-                              </span>
-                            </div>
-                            <p className="text-sm text-neutral-500 truncate mt-0.5">{order.items}</p>
-                            <p className="text-xs text-neutral-400 mt-0.5 sm:hidden">
-                              {new Date(order.date).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                          <div className="text-right hidden sm:block">
-                            <p className="font-semibold text-neutral-900">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                            <p className="text-xs text-neutral-400">{new Date(order.date).toLocaleDateString()}</p>
-                          </div>
-                          <p className="font-semibold text-neutral-900 sm:hidden">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                          <ChevronRight className="w-5 h-5 text-neutral-400" />
-                        </div>
-                      </div>
-                      {order.trackingNumber && (
-                        <div className="mt-3 pt-3 border-t border-neutral-100">
-                          <p className="text-xs text-neutral-500">
-                            Tracking: <span className="font-medium text-neutral-700">{order.trackingNumber}</span>
-                          </p>
-                        </div>
-                      )}
+                      Get Started
                     </Link>
-                  );
-                })}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {sampleOrders.map((order) => {
+                      const status = statusConfig[order.status] || statusConfig.new;
+                      const StatusIcon = status.icon;
+
+                      return (
+                        <Link
+                          key={order.id}
+                          href={`/order/${order.id}`}
+                          className="block bg-neutral-50 rounded-xl p-4 hover:bg-neutral-100 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${status.bgColor} flex items-center justify-center shrink-0`}>
+                                <StatusIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${status.color}`} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-neutral-900 text-sm sm:text-base">{order.id}</span>
+                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}>
+                                    {status.label}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-neutral-500 truncate mt-0.5">{order.items}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                              <div className="text-right">
+                                <p className="font-semibold text-neutral-900">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                                <p className="text-xs text-neutral-400 hidden sm:block">{new Date(order.date).toLocaleDateString()}</p>
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-neutral-400" />
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Settings Tab */}
-        {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold text-neutral-900">Account Settings</h2>
-
-            <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-200">
-              <div className="p-4 sm:p-6">
-                <h3 className="text-sm font-medium text-neutral-900 mb-4">Profile Information</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      defaultValue={user.name || ''}
-                      placeholder="Enter your name"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Email</label>
-                    <input
-                      type="email"
-                      defaultValue={user.email}
-                      disabled
-                      className="w-full px-3 py-2 border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-500 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Phone</label>
-                    <input
-                      type="tel"
-                      placeholder="(555) 123-4567"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
-                    />
-                  </div>
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-neutral-900">Profile Information</h2>
+                  <p className="text-sm text-neutral-500">Update your personal details</p>
                 </div>
-              </div>
 
-              <div className="p-4 sm:p-6">
-                <h3 className="text-sm font-medium text-neutral-900 mb-4">Default Shipping Address</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-neutral-600 mb-1">Street Address</label>
-                    <input
-                      type="text"
-                      placeholder="123 Main St"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
-                    />
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-white text-2xl font-medium">
+                      {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                    </div>
+                    <button className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50">
+                      Change Photo
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="col-span-2 sm:col-span-2">
-                      <label className="block text-sm text-neutral-600 mb-1">City</label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Full Name</label>
                       <input
                         type="text"
-                        placeholder="City"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
+                        defaultValue={user.name || ''}
+                        placeholder="Enter your name"
+                        className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-neutral-600 mb-1">State</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Email</label>
                       <input
-                        type="text"
-                        placeholder="ST"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
+                        type="email"
+                        defaultValue={user.email}
+                        disabled
+                        className="w-full px-4 py-3 border border-neutral-200 rounded-lg bg-neutral-50 text-neutral-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-neutral-600 mb-1">ZIP</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Phone</label>
+                      <input
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">Company (optional)</label>
                       <input
                         type="text"
-                        placeholder="12345"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
+                        placeholder="Your company name"
+                        className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                       />
                     </div>
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="p-4 sm:p-6">
-                <button className="w-full sm:w-auto px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity">
-                  Save Changes
-                </button>
+            {/* Addresses Tab */}
+            {activeTab === 'addresses' && (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-neutral-900">Shipping Addresses</h2>
+                  <p className="text-sm text-neutral-500">Manage your saved shipping addresses</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="border border-neutral-200 rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-[var(--color-primary)] text-white text-xs font-medium rounded">Default</span>
+                        <span className="text-sm font-medium text-neutral-900">Home</span>
+                      </div>
+                      <button className="text-sm text-[var(--color-primary)] hover:underline">Edit</button>
+                    </div>
+                    <p className="text-sm text-neutral-600">123 Main Street</p>
+                    <p className="text-sm text-neutral-600">Conway, AR 72032</p>
+                  </div>
+
+                  <button className="w-full py-3 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-500 hover:border-neutral-400 hover:text-neutral-600 transition-colors">
+                    + Add New Address
+                  </button>
+                </div>
               </div>
-            </div>
-
-            {/* Danger Zone */}
-            <div className="bg-white rounded-xl border border-red-200 p-4 sm:p-6">
-              <h3 className="text-sm font-medium text-red-600 mb-2">Danger Zone</h3>
-              <p className="text-sm text-neutral-500 mb-4">
-                Once you delete your account, there is no going back. Please be certain.
-              </p>
-              <button className="px-4 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50">
-                Delete Account
-              </button>
-            </div>
-          </div>
-        )}
+            )}
+        </div>
       </main>
     </div>
   );

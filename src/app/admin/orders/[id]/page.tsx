@@ -93,6 +93,11 @@ export default function AdminOrderDetailPage() {
   const router = useRouter();
   const orderId = params.id as string;
 
+  const handleSignOut = () => {
+    localStorage.removeItem('forge_user');
+    router.push('/');
+  };
+
   const [order] = useState(mockOrder);
   const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'messages' | 'history'>(
     'overview'
@@ -181,7 +186,10 @@ export default function AdminOrderDetailPage() {
         </nav>
 
         <div className="p-4 border-t border-neutral-200">
-          <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full"
+          >
             <LogOut className="w-5 h-5" />
             Sign Out
           </button>

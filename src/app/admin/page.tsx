@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
@@ -71,7 +72,13 @@ const statusColors: Record<string, { bg: string; text: string; label: string }> 
 };
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [activeNav, setActiveNav] = useState('dashboard');
+
+  const handleSignOut = () => {
+    localStorage.removeItem('forge_user');
+    router.push('/');
+  };
 
   return (
     <div className="min-h-screen bg-neutral-100 flex">
@@ -135,7 +142,10 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="p-4 border-t border-neutral-200">
-          <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full transition-colors">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-600 hover:bg-neutral-100 w-full transition-colors"
+          >
             <LogOut className="w-5 h-5" />
             Sign Out
           </button>

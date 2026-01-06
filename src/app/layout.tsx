@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ColorProvider from '@/components/ColorProvider';
 
 export const metadata: Metadata = {
   title: 'CruLink: Forge - Instant Metal Fabrication Quotes',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <ColorProvider>
+          {children}
+        </ColorProvider>
       </body>
     </html>
   );
