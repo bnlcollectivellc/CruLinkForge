@@ -545,6 +545,8 @@ function BuilderContent() {
     bendConfiguration,
     bendEditMode,
     setBendEditMode,
+    partViewMode,
+    setPartViewMode,
     addBend,
     updateBend,
     removeBend,
@@ -851,7 +853,30 @@ function BuilderContent() {
           finish={finish3D}
           showGrid={true}
           className="w-full h-full"
+          bendConfiguration={bendConfiguration}
+          viewMode={partViewMode}
         />
+        {/* Mobile view mode toggle */}
+        {bendConfiguration && bendConfiguration.totalBends > 0 && (
+          <div className="absolute top-2 right-2 flex gap-1 bg-white/90 backdrop-blur rounded-lg p-1 shadow-lg">
+            <button
+              onClick={() => setPartViewMode('flat')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                partViewMode === 'flat' ? 'bg-blue-500 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+              }`}
+            >
+              Flat
+            </button>
+            <button
+              onClick={() => setPartViewMode('folded')}
+              className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
+                partViewMode === 'folded' ? 'bg-blue-500 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+              }`}
+            >
+              Folded
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Left Panel - Configuration (Desktop: left side, Mobile: bottom portion) */}
@@ -1462,6 +1487,8 @@ function BuilderContent() {
               finish={finish3D}
               showGrid={true}
               className="w-full h-full"
+              bendConfiguration={bendConfiguration}
+              viewMode={partViewMode}
             />
 
             {/* Bottom hint - Desktop */}
@@ -1473,11 +1500,30 @@ function BuilderContent() {
               </div>
             </div>
 
-            {/* Show bend count indicator if bends are configured */}
+            {/* Show bend count indicator and view mode toggle if bends are configured */}
             {bendConfiguration && bendConfiguration.totalBends > 0 && (
-              <div className="absolute top-4 left-4">
+              <div className="absolute top-4 left-4 flex items-center gap-3">
                 <div className="bg-blue-500 text-white px-3 py-1.5 rounded-lg shadow-lg text-sm font-medium">
                   {bendConfiguration.totalBends} bend{bendConfiguration.totalBends > 1 ? 's' : ''} configured
+                </div>
+                {/* View mode toggle */}
+                <div className="flex bg-white/90 backdrop-blur rounded-lg p-1 shadow-lg border border-neutral-200">
+                  <button
+                    onClick={() => setPartViewMode('flat')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                      partViewMode === 'flat' ? 'bg-blue-500 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
+                  >
+                    Flat Pattern
+                  </button>
+                  <button
+                    onClick={() => setPartViewMode('folded')}
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                      partViewMode === 'folded' ? 'bg-blue-500 text-white' : 'text-neutral-600 hover:bg-neutral-100'
+                    }`}
+                  >
+                    Folded View
+                  </button>
                 </div>
               </div>
             )}

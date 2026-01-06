@@ -4,7 +4,8 @@ import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, Grid } from '@react-three/drei';
 import * as THREE from 'three';
-import type { Part3DProps, MaterialPreset } from '@/types';
+import type { Part3DProps, MaterialPreset, BendConfiguration, PartViewMode } from '@/types';
+import BentPartMesh from './BentPartMesh';
 
 // WebGL context loss handler component
 function ContextLossHandler({ onContextLost }: { onContextLost: () => void }) {
@@ -551,6 +552,8 @@ interface PartViewerProps {
   className?: string;
   showGrid?: boolean;
   autoRotate?: boolean;
+  bendConfiguration?: BendConfiguration | null;
+  viewMode?: PartViewMode;
 }
 
 export default function PartViewer({
@@ -561,6 +564,8 @@ export default function PartViewer({
   className = '',
   showGrid = true,
   autoRotate = false,
+  bendConfiguration,
+  viewMode = 'flat',
 }: PartViewerProps) {
   // Key to force remount on context loss
   const [canvasKey, setCanvasKey] = useState(0);
@@ -615,13 +620,25 @@ export default function PartViewer({
             intensity={0.5}
             shadows={{ type: 'contact', opacity: 0.4, blur: 2 }}
           >
-            <PartMesh
-              template={activeTemplate}
-              dimensions={activeDimensions}
-              materialType={materialType}
-              finishColor={finishColor}
-              thickness={thickness}
-            />
+            {bendConfiguration && bendConfiguration.bends.length > 0 ? (
+              <BentPartMesh
+                template={activeTemplate}
+                dimensions={activeDimensions}
+                materialType={materialType}
+                finishColor={finishColor}
+                thickness={thickness}
+                bendConfiguration={bendConfiguration}
+                viewMode={viewMode}
+              />
+            ) : (
+              <PartMesh
+                template={activeTemplate}
+                dimensions={activeDimensions}
+                materialType={materialType}
+                finishColor={finishColor}
+                thickness={thickness}
+              />
+            )}
           </Stage>
 
           {showGrid && (
