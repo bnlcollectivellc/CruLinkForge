@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ChevronDown, Plus, Minus, X, Check, ArrowLeft, FileText } from 'lucide-react';
+import { ChevronDown, Plus, Minus, X, Check, ArrowLeft, FileText, Move3D } from 'lucide-react';
 import { useConfigurator } from '@/store/useConfigurator';
+import type { SelectableEdge } from '@/types';
 
-// Dynamically import PartViewer to avoid SSR issues with Three.js
+// Dynamically import 3D components to avoid SSR issues with Three.js
 const PartViewer = dynamic(() => import('@/components/3d/PartViewer'), {
   ssr: false,
   loading: () => (
@@ -16,6 +17,19 @@ const PartViewer = dynamic(() => import('@/components/3d/PartViewer'), {
       <div className="text-neutral-400">Loading 3D viewer...</div>
     </div>
   ),
+});
+
+const BendLineSelector = dynamic(() => import('@/components/3d/BendLineSelector'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-neutral-100">
+      <div className="text-neutral-400">Loading bend editor...</div>
+    </div>
+  ),
+});
+
+const BendEditorPanel = dynamic(() => import('@/components/3d/BendEditorPanel'), {
+  ssr: false,
 });
 
 // Template icon SVGs
@@ -527,7 +541,38 @@ function BuilderContent() {
     setQuantity,
     priceBreakdown,
     setPartDimensions,
+    // Bend configuration
+    bendConfiguration,
+    bendEditMode,
+    setBendEditMode,
+    addBend,
+    updateBend,
+    removeBend,
+    clearBends,
+    initializeBendConfiguration,
   } = useConfigurator();
+
+  // Bend editor state
+  const [selectedEdge, setSelectedEdge] = useState<SelectableEdge | null>(null);
+
+  // Handle entering bend edit mode
+  const handleEnterBendEditMode = useCallback(() => {
+    initializeBendConfiguration();
+    setBendEditMode(true);
+    setSelectedEdge(null);
+  }, [initializeBendConfiguration, setBendEditMode]);
+
+  // Handle exiting bend edit mode
+  const handleExitBendEditMode = useCallback(() => {
+    setBendEditMode(false);
+    setSelectedEdge(null);
+  }, [setBendEditMode]);
+
+  // Handle adding a bend from the editor
+  const handleAddBend = useCallback((bend: Parameters<typeof addBend>[0]) => {
+    addBend(bend);
+    setSelectedEdge(null);
+  }, [addBend]);
 
   // URL search params for uploaded file handling
   const searchParams = useSearchParams();
@@ -1138,6 +1183,37 @@ function BuilderContent() {
                           </div>
                         </div>
                       )}
+
+                      {/* Interactive bend configuration for bending service */}
+                      {isSelected && service.id === 'bending' && selectedTemplate && (
+                        <div className="px-3 pb-3 pt-0 border-t border-neutral-100">
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-neutral-500">Bend Lines</span>
+                              {bendConfiguration && bendConfiguration.totalBends > 0 && (
+                                <span className="text-xs font-medium text-[var(--color-primary)]">
+                                  {bendConfiguration.totalBends} bend{bendConfiguration.totalBends > 1 ? 's' : ''} configured
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEnterBendEditMode();
+                              }}
+                              className="w-full p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
+                            >
+                              <Move3D className="w-4 h-4" />
+                              {bendConfiguration && bendConfiguration.totalBends > 0
+                                ? 'Edit Bend Lines'
+                                : 'Configure Bend Lines'}
+                            </button>
+                            <p className="text-xs text-neutral-400">
+                              Click edges on the part preview to place bend lines
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1336,23 +1412,77 @@ function BuilderContent() {
 
       {/* 3D Viewer - Desktop only (mobile viewer is above) */}
       <div className="hidden md:flex flex-1 relative">
-        <PartViewer
-          template={template3D}
-          material={material3D}
-          dimensions={dimensions3D}
-          finish={finish3D}
-          showGrid={true}
-          className="w-full h-full"
-        />
+        {bendEditMode && selectedTemplate ? (
+          // Bend editing mode - show 2D selector and editor panel
+          <div className="w-full h-full flex">
+            {/* 2D Bend Line Selector */}
+            <div className="flex-1 p-4">
+              <BendLineSelector
+                template={template3D}
+                thickness={selectedMaterial?.thickness?.inches || 0.0625}
+                existingBends={bendConfiguration?.bends || []}
+                onEdgeSelect={setSelectedEdge}
+                onBendAdd={handleAddBend}
+                selectedEdge={selectedEdge}
+                className="w-full h-full"
+              />
+            </div>
 
-        {/* Bottom hint - Desktop */}
-        <div className="absolute bottom-4 right-4">
-          <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-lg border border-neutral-200">
-            <span className="text-xs text-neutral-500">
-              Drag to rotate • Scroll to zoom • Shift+drag to pan
-            </span>
+            {/* Bend Editor Panel */}
+            <div className="w-80 border-l border-neutral-200 bg-white overflow-y-auto">
+              <BendEditorPanel
+                selectedEdge={selectedEdge}
+                existingBends={bendConfiguration?.bends || []}
+                onAddBend={handleAddBend}
+                onUpdateBend={updateBend}
+                onRemoveBend={removeBend}
+                onClearBends={clearBends}
+                onCancel={() => setSelectedEdge(null)}
+              />
+            </div>
+
+            {/* Exit bend edit mode button */}
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={handleExitBendEditMode}
+                className="bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-white transition-colors flex items-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Done Editing Bends
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          // Normal 3D view mode
+          <>
+            <PartViewer
+              template={template3D}
+              material={material3D}
+              dimensions={dimensions3D}
+              finish={finish3D}
+              showGrid={true}
+              className="w-full h-full"
+            />
+
+            {/* Bottom hint - Desktop */}
+            <div className="absolute bottom-4 right-4">
+              <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-lg border border-neutral-200">
+                <span className="text-xs text-neutral-500">
+                  Drag to rotate • Scroll to zoom • Shift+drag to pan
+                </span>
+              </div>
+            </div>
+
+            {/* Show bend count indicator if bends are configured */}
+            {bendConfiguration && bendConfiguration.totalBends > 0 && (
+              <div className="absolute top-4 left-4">
+                <div className="bg-blue-500 text-white px-3 py-1.5 rounded-lg shadow-lg text-sm font-medium">
+                  {bendConfiguration.totalBends} bend{bendConfiguration.totalBends > 1 ? 's' : ''} configured
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Quote Summary Modal */}

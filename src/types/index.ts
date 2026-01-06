@@ -163,6 +163,54 @@ export interface SelectedService {
 }
 
 // =====================
+// BEND TYPES
+// =====================
+
+export type BendType = 'simple' | 'hem' | 'channel' | 'offset';
+export type BendDirection = 'up' | 'down';
+
+export interface BendLine {
+  id: string;
+  // Position in 2D flat pattern coordinates (inches)
+  startPoint: [number, number];
+  endPoint: [number, number];
+  // Bend parameters
+  angle: number;              // Degrees (default 90, negative for opposite)
+  direction: BendDirection;   // Which way does the flange go
+  bendType: BendType;
+  // Calculated values (computed from material)
+  bendRadius?: number;        // Inside radius (typically 1x thickness)
+  bendAllowance?: number;     // Arc length consumed
+  kFactor?: number;           // Material-specific K-factor
+  // Manufacturing sequence
+  sequence: number;           // Order of operations
+}
+
+export interface SelectableEdge {
+  id: string;
+  startPoint: [number, number];
+  endPoint: [number, number];
+  length: number;
+  isValid: boolean;
+  invalidReason?: string;
+}
+
+export interface BendConfiguration {
+  bends: BendLine[];
+  // Default settings (from material)
+  defaultKFactor: number;
+  defaultBendRadius: number;  // Multiplier of thickness (1 = 1T)
+  // Computed summary
+  totalBends: number;
+  flatLength: number;         // Total flat pattern length
+  foldedDimensions?: {
+    width: number;
+    height: number;
+    depth: number;
+  };
+}
+
+// =====================
 // FINISH TYPES
 // =====================
 
@@ -275,11 +323,15 @@ export interface CustomerInfo {
 // 3D VIEWER TYPES
 // =====================
 
+export type PartViewMode = 'flat' | 'folded';
+
 export interface Part3DProps {
   template: SelectedTemplate;
   material: SelectedMaterial;
   dimensions: PartDimensions;
   finish?: SelectedFinish;
+  bendConfiguration?: BendConfiguration;
+  viewMode?: PartViewMode;
 }
 
 export type MaterialAppearance = 'steel' | 'stainless' | 'aluminum' | 'powder-coat';

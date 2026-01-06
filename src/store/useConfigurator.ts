@@ -3,6 +3,13 @@ import materialsData from '@/data/materials.json';
 import servicesData from '@/data/services.json';
 import finishesData from '@/data/finishes.json';
 import templatesData from '@/data/templates.json';
+import type { BendLine, BendConfiguration, PartViewMode } from '@/types';
+import {
+  createBendLine,
+  createEmptyBendConfiguration,
+  recalculateBendConfiguration,
+  getKFactor,
+} from '@/lib/utils/bendCalculations';
 
 // Types
 export type ConfiguratorStep = 'entry' | 'template' | 'dimensions' | 'material' | 'services' | 'finish' | 'review';
@@ -103,6 +110,11 @@ interface ConfiguratorState {
   // Pricing
   priceBreakdown: PriceBreakdown | null;
 
+  // Bend Configuration
+  bendConfiguration: BendConfiguration | null;
+  bendEditMode: boolean;
+  partViewMode: PartViewMode;
+
   // Data
   materials: MaterialCategory[];
   services: typeof servicesData.services;
@@ -135,6 +147,16 @@ interface ConfiguratorState {
   setPartDimensions: (dimensions: PartDimensions) => void;
 
   setUploadedFile: (file: File | null, preview: string | null) => void;
+
+  // Bend actions
+  setBendEditMode: (enabled: boolean) => void;
+  setPartViewMode: (mode: PartViewMode) => void;
+  initializeBendConfiguration: () => void;
+  addBend: (bend: Omit<BendLine, 'id' | 'sequence' | 'bendRadius' | 'bendAllowance' | 'kFactor'>) => void;
+  updateBend: (bendId: string, updates: Partial<BendLine>) => void;
+  removeBend: (bendId: string) => void;
+  reorderBends: (bendIds: string[]) => void;
+  clearBends: () => void;
 
   calculatePrice: () => void;
   reset: () => void;
@@ -178,6 +200,11 @@ export const useConfigurator = create<ConfiguratorState>((set, get) => ({
   uploadedFilePreview: null,
 
   priceBreakdown: null,
+
+  // Bend configuration
+  bendConfiguration: null,
+  bendEditMode: false,
+  partViewMode: 'flat' as PartViewMode,
 
   // Load data
   materials: materialsData.categories as MaterialCategory[],
@@ -310,8 +337,133 @@ export const useConfigurator = create<ConfiguratorState>((set, get) => ({
     set({ uploadedFile: file, uploadedFilePreview: preview });
   },
 
+  // Bend actions
+  setBendEditMode: (enabled) => {
+    set({ bendEditMode: enabled });
+  },
+
+  setPartViewMode: (mode) => {
+    set({ partViewMode: mode });
+  },
+
+  initializeBendConfiguration: () => {
+    const { selectedMaterial, bendConfiguration } = get();
+    if (bendConfiguration) return; // Already initialized
+
+    // Get material ID for K-factor lookup
+    const materialId = selectedMaterial?.subcategoryId || selectedMaterial?.categoryId || 'carbon-steel';
+    const config = createEmptyBendConfiguration(materialId);
+    set({ bendConfiguration: config });
+  },
+
+  addBend: (bend) => {
+    const { bendConfiguration, selectedMaterial } = get();
+    if (!bendConfiguration) {
+      get().initializeBendConfiguration();
+    }
+
+    const config = get().bendConfiguration;
+    if (!config) return;
+
+    const materialId = selectedMaterial?.subcategoryId || selectedMaterial?.categoryId || 'carbon-steel';
+    const thickness = selectedMaterial?.thickness.inches || 0.0625; // Default to 16 gauge
+
+    const newBend = createBendLine(
+      `bend-${Date.now()}`,
+      bend.startPoint,
+      bend.endPoint,
+      bend.angle,
+      bend.direction,
+      bend.bendType,
+      thickness,
+      materialId,
+      config.bends.length + 1
+    );
+
+    const updatedConfig = {
+      ...config,
+      bends: [...config.bends, newBend],
+      totalBends: config.bends.length + 1,
+    };
+
+    set({ bendConfiguration: updatedConfig });
+    get().calculatePrice();
+  },
+
+  updateBend: (bendId, updates) => {
+    const { bendConfiguration, selectedMaterial } = get();
+    if (!bendConfiguration) return;
+
+    const thickness = selectedMaterial?.thickness.inches || 0.0625;
+
+    const updatedBends = bendConfiguration.bends.map(bend => {
+      if (bend.id !== bendId) return bend;
+      return { ...bend, ...updates };
+    });
+
+    const updatedConfig = recalculateBendConfiguration(
+      { ...bendConfiguration, bends: updatedBends },
+      thickness
+    );
+
+    set({ bendConfiguration: updatedConfig });
+    get().calculatePrice();
+  },
+
+  removeBend: (bendId) => {
+    const { bendConfiguration } = get();
+    if (!bendConfiguration) return;
+
+    const updatedBends = bendConfiguration.bends
+      .filter(bend => bend.id !== bendId)
+      .map((bend, index) => ({ ...bend, sequence: index + 1 }));
+
+    set({
+      bendConfiguration: {
+        ...bendConfiguration,
+        bends: updatedBends,
+        totalBends: updatedBends.length,
+      },
+    });
+    get().calculatePrice();
+  },
+
+  reorderBends: (bendIds) => {
+    const { bendConfiguration } = get();
+    if (!bendConfiguration) return;
+
+    const reorderedBends = bendIds
+      .map((id, index) => {
+        const bend = bendConfiguration.bends.find(b => b.id === id);
+        return bend ? { ...bend, sequence: index + 1 } : null;
+      })
+      .filter((b): b is BendLine => b !== null);
+
+    set({
+      bendConfiguration: {
+        ...bendConfiguration,
+        bends: reorderedBends,
+      },
+    });
+  },
+
+  clearBends: () => {
+    const { bendConfiguration } = get();
+    if (!bendConfiguration) return;
+
+    set({
+      bendConfiguration: {
+        ...bendConfiguration,
+        bends: [],
+        totalBends: 0,
+      },
+      bendEditMode: false,
+    });
+    get().calculatePrice();
+  },
+
   calculatePrice: () => {
-    const { selectedMaterial, partDimensions, selectedServices, selectedFinish, quantity, volumeDiscounts, services, finishes } = get();
+    const { selectedMaterial, partDimensions, selectedServices, selectedFinish, quantity, volumeDiscounts, services, finishes, bendConfiguration } = get();
 
     if (!selectedMaterial || !partDimensions) {
       set({ priceBreakdown: null });
@@ -380,6 +532,19 @@ export const useConfigurator = create<ConfiguratorState>((set, get) => ({
       }
     });
 
+    // Add bending cost from bend configuration (if bends were placed interactively)
+    if (bendConfiguration && bendConfiguration.totalBends > 0) {
+      const bendingService = services.find(s => s.id === 'bending');
+      if (bendingService) {
+        // Bending setup fee
+        servicesCost += bendingService.basePrice || 5;
+        // Per-bend cost (use simple-bend pricing as default)
+        const simpleBendOption = bendingService.options?.find((o: { id: string }) => o.id === 'simple-bend');
+        const perBendPrice = simpleBendOption && 'price' in simpleBendOption ? (simpleBendOption.price as number) : 1.5;
+        servicesCost += perBendPrice * bendConfiguration.totalBends;
+      }
+    }
+
     // Finish cost
     let finishMultiplier = 1;
     let finishUpcharge = 0;
@@ -441,6 +606,9 @@ export const useConfigurator = create<ConfiguratorState>((set, get) => ({
       uploadedFile: null,
       uploadedFilePreview: null,
       priceBreakdown: null,
+      bendConfiguration: null,
+      bendEditMode: false,
+      partViewMode: 'flat' as PartViewMode,
     });
   },
 }));
